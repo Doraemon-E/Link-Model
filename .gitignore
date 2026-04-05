@@ -8,3 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
+models
+.DS_Store
+upload_to_cloudflare_r2.py
