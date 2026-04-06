@@ -9,48 +9,44 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 try:
-    from .download_manifest import MODEL_SPECS
-    from .paths import PACKAGED_MODELS_DIR, REPO_ROOT
+    from .paths import PACKAGED_SPEECH_MODELS_DIR, REPO_ROOT
+    from .speech_manifest import SPEECH_MODEL_SPECS
 except ImportError:
-    from download_manifest import MODEL_SPECS
-    from paths import PACKAGED_MODELS_DIR, REPO_ROOT
+    from paths import PACKAGED_SPEECH_MODELS_DIR, REPO_ROOT
+    from speech_manifest import SPEECH_MODEL_SPECS
 
-DEFAULT_OUTPUT_PATH = REPO_ROOT.parent / "link" / "link" / "Resource" / "translation-catalog.json"
-ARCHIVE_BASE_URL = "https://link.hackerapp.site/link/translation/packages"
+DEFAULT_OUTPUT_PATH = REPO_ROOT.parent / "link" / "link" / "Resource" / "speech-catalog.json"
+ARCHIVE_BASE_URL = "https://link.hackerapp.site/link/speech/packages"
 
 
 @dataclass(frozen=True)
 class CatalogPackage:
     package_id: str
     version: str
-    source: str
-    target: str
     family: str
     archive_url: str
     sha256: str
     archive_size: int
     installed_size: int
-    manifest_relative_path: str = "translation-manifest.json"
+    model_relative_path: str
     min_app_version: str = "1.0.0"
 
     def to_dict(self) -> dict[str, object]:
         return {
             "packageId": self.package_id,
             "version": self.version,
-            "source": self.source,
-            "target": self.target,
             "family": self.family,
             "archiveURL": self.archive_url,
             "sha256": self.sha256,
             "archiveSize": self.archive_size,
             "installedSize": self.installed_size,
-            "manifestRelativePath": self.manifest_relative_path,
+            "modelRelativePath": self.model_relative_path,
             "minAppVersion": self.min_app_version,
         }
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate translation-catalog.json from local zip packages.")
+    parser = argparse.ArgumentParser(description="Generate speech-catalog.json from local speech packages.")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH)
     parser.add_argument("--version", type=int, default=None)
     parser.add_argument("--package-version", default="1.0.0")
@@ -91,24 +87,21 @@ def resolve_catalog_version(output_path: Path, requested_version: int | None) ->
 def build_packages(package_version: str, min_app_version: str) -> list[CatalogPackage]:
     packages: list[CatalogPackage] = []
 
-    for spec in MODEL_SPECS:
-        archive_name = spec.archive_file_name
-        archive_path = PACKAGED_MODELS_DIR / archive_name
-
+    for spec in SPEECH_MODEL_SPECS:
+        archive_path = PACKAGED_SPEECH_MODELS_DIR / spec.archive_file_name
         if not archive_path.exists():
-            raise FileNotFoundError(f"Missing archive: {archive_path}")
+            raise FileNotFoundError(f"Missing speech archive: {archive_path}")
 
         packages.append(
             CatalogPackage(
                 package_id=spec.package_id,
                 version=package_version,
-                source=spec.source,
-                target=spec.target,
                 family=spec.family,
-                archive_url=f"{ARCHIVE_BASE_URL}/{archive_name}",
+                archive_url=f"{ARCHIVE_BASE_URL}/{spec.archive_file_name}",
                 sha256=sha256_for_file(archive_path),
                 archive_size=archive_path.stat().st_size,
                 installed_size=installed_size_for_archive(archive_path),
+                model_relative_path=spec.local_file_name,
                 min_app_version=min_app_version,
             )
         )

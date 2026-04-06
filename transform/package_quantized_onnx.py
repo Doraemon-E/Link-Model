@@ -1,110 +1,70 @@
 from __future__ import annotations
 
 import shutil
-from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_MODELS_DIR = REPO_ROOT / "models"
-
-QUANTIZED_FILE_MAP = {
-    "encoder_model_int8.onnx": "encoder_model.onnx",
-    "decoder_model_int8.onnx": "decoder_model.onnx",
-    "decoder_with_past_model_int8.onnx": "decoder_with_past_model.onnx",
-}
-REQUIRED_QUANTIZED_FILE_NAMES = {
-    "encoder_model_int8.onnx",
-    "decoder_model_int8.onnx",
-}
-
-ASSET_SUFFIXES = {".json", ".model", ".spm"}
-ASSET_FILE_NAMES = {"vocab.json"}
-
-
-def iter_source_model_dirs(models_dir: Path) -> list[Path]:
-    model_dirs: list[Path] = []
-    for path in sorted(p for p in models_dir.iterdir() if p.is_dir()):
-        if not path.name.endswith("-onnx"):
-            continue
-        model_dirs.append(path)
-    return model_dirs
+try:
+    from .download_manifest import MODEL_SPECS, ModelSpec
+    from .paths import PACKAGED_MODELS_DIR, ensure_stage_directories, packaged_archive_path, quantized_model_dir
+    from .stage_helpers import (
+        cleanup_packaging_temporary_directories,
+        create_temporary_directory,
+        is_archive_complete,
+        is_quantized_complete,
+    )
+except ImportError:
+    from download_manifest import MODEL_SPECS, ModelSpec
+    from paths import PACKAGED_MODELS_DIR, ensure_stage_directories, packaged_archive_path, quantized_model_dir
+    from stage_helpers import (
+        cleanup_packaging_temporary_directories,
+        create_temporary_directory,
+        is_archive_complete,
+        is_quantized_complete,
+    )
 
 
-def find_missing_quantized_files(model_dir: Path) -> list[str]:
-    return [
-        source_name
-        for source_name in REQUIRED_QUANTIZED_FILE_NAMES
-        if not (model_dir / source_name).exists()
-    ]
+def package_model(spec: ModelSpec) -> bool:
+    source_dir = quantized_model_dir(spec.local_name)
+    archive_path = packaged_archive_path(spec.local_name)
 
+    if is_archive_complete(archive_path):
+        print(f"跳过已存在压缩包: {archive_path}")
+        return False
 
-def copy_assets(source_dir: Path, target_dir: Path) -> None:
-    for source_path in sorted(source_dir.iterdir()):
-        if not source_path.is_file():
-            continue
-        if source_path.name in QUANTIZED_FILE_MAP:
-            continue
-        if source_path.suffix in ASSET_SUFFIXES or source_path.name in ASSET_FILE_NAMES:
-            shutil.copy2(source_path, target_dir / source_path.name)
+    if not is_quantized_complete(source_dir):
+        raise FileNotFoundError(f"未找到可打包的量化目录: {source_dir}")
 
+    temp_root = create_temporary_directory(PACKAGED_MODELS_DIR, f"tmp-{spec.local_name}")
+    payload_dir = temp_root / archive_path.stem
 
-def copy_quantized_models(source_dir: Path, target_dir: Path) -> None:
-    for source_name, target_name in QUANTIZED_FILE_MAP.items():
-        source_path = source_dir / source_name
-        if not source_path.exists():
-            continue
-        shutil.copy2(source_path, target_dir / target_name)
-
-
-def package_model(model_dir: Path) -> tuple[Path, Path]:
-    package_dir = model_dir.parent / f"{model_dir.name}-int8"
-    zip_base = model_dir.parent / package_dir.name
-
-    if package_dir.exists():
-        shutil.rmtree(package_dir)
-
-    zip_path = zip_base.with_suffix(".zip")
-    if zip_path.exists():
-        zip_path.unlink()
-
-    package_dir.mkdir(parents=True, exist_ok=True)
-    copy_assets(model_dir, package_dir)
-    copy_quantized_models(model_dir, package_dir)
-
-    shutil.make_archive(zip_base.as_posix(), "zip", root_dir=package_dir.parent, base_dir=package_dir.name)
-    return package_dir, zip_path
+    try:
+        shutil.copytree(source_dir, payload_dir)
+        archive_base = temp_root / archive_path.stem
+        temp_archive_path = archive_base.with_suffix(".zip")
+        shutil.make_archive(
+            archive_base.as_posix(),
+            "zip",
+            root_dir=temp_root,
+            base_dir=payload_dir.name,
+        )
+        if archive_path.exists():
+            archive_path.unlink()
+        shutil.move(temp_archive_path.as_posix(), archive_path.as_posix())
+        return True
+    finally:
+        shutil.rmtree(temp_root, ignore_errors=True)
 
 
 def main() -> None:
-    models_dir = DEFAULT_MODELS_DIR.resolve()
-    if not models_dir.exists():
-        raise FileNotFoundError(f"models directory not found: {models_dir}")
+    ensure_stage_directories()
+    cleanup_packaging_temporary_directories()
 
-    source_model_dirs = iter_source_model_dirs(models_dir)
-    if not source_model_dirs:
-        print(f"未找到可打包的模型目录: {models_dir}")
-        return
-
-    packaged_count = 0
-    skipped_count = 0
-
-    for model_dir in source_model_dirs:
-        missing = find_missing_quantized_files(model_dir)
-        if missing:
-            skipped_count += 1
-            missing_text = ", ".join(missing)
-            print(f"跳过未量化完整的目录: {model_dir} 缺少 {missing_text}")
-            continue
-
-        package_dir, zip_path = package_model(model_dir)
-        print(f"已生成目录: {package_dir}")
-        print(f"已生成压缩包: {zip_path}")
-        packaged_count += 1
-
-    print(
-        "处理完成："
-        f" 生成 {packaged_count} 个发布目录和 zip，"
-        f" 跳过 {skipped_count} 个未量化完整的目录。"
-    )
+    for spec in MODEL_SPECS:
+        source_dir = quantized_model_dir(spec.local_name)
+        archive_path = packaged_archive_path(spec.local_name)
+        print(f"开始打包量化模型: {source_dir}")
+        packaged = package_model(spec)
+        if packaged:
+            print(f"已生成压缩包: {archive_path}")
 
 
 if __name__ == "__main__":

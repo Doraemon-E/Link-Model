@@ -1,31 +1,67 @@
-from pathlib import Path
+from __future__ import annotations
 
+import shutil
 from optimum.onnxruntime import ORTModelForSeq2SeqLM
 from transformers import AutoTokenizer
 
-from model_registry import MODEL_SPECS, model_directory_name
+try:
+    from .download_manifest import MODEL_SPECS, ModelSpec
+    from .paths import EXPORTED_MODELS_DIR, downloaded_model_dir, ensure_stage_directories, exported_model_dir
+    from .stage_helpers import (
+        create_temporary_directory,
+        is_download_complete,
+        is_export_complete,
+        replace_directory,
+    )
+except ImportError:
+    from download_manifest import MODEL_SPECS, ModelSpec
+    from paths import EXPORTED_MODELS_DIR, downloaded_model_dir, ensure_stage_directories, exported_model_dir
+    from stage_helpers import (
+        create_temporary_directory,
+        is_download_complete,
+        is_export_complete,
+        replace_directory,
+    )
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-MODEL_DIRS = [
-    REPO_ROOT / "models" / model_directory_name(spec) for spec in MODEL_SPECS
-]
 
+def export_to_onnx(spec: ModelSpec) -> bool:
+    model_dir = downloaded_model_dir(spec.local_name)
+    onnx_dir = exported_model_dir(spec.local_name)
 
-def export_to_onnx(model_dir: Path) -> None:
-    onnx_dir = model_dir.parent / f"{model_dir.name}-onnx"
+    if is_export_complete(onnx_dir):
+        print(f"跳过已导出的 ONNX: {onnx_dir}")
+        return False
 
-    tokenizer = AutoTokenizer.from_pretrained(model_dir)
-    model = ORTModelForSeq2SeqLM.from_pretrained(model_dir, export=True)
+    if not is_download_complete(model_dir):
+        raise FileNotFoundError(f"未找到可导出的原始模型目录: {model_dir}")
 
-    model.save_pretrained(onnx_dir)
-    tokenizer.save_pretrained(onnx_dir)
+    temp_dir = create_temporary_directory(
+        EXPORTED_MODELS_DIR,
+        f"tmp-{spec.local_name}",
+    )
+
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(model_dir)
+        model = ORTModelForSeq2SeqLM.from_pretrained(model_dir, export=True)
+        model.save_pretrained(temp_dir)
+        tokenizer.save_pretrained(temp_dir)
+        replace_directory(temp_dir, onnx_dir)
+        return True
+    except Exception:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+        raise
 
 
 def main() -> None:
-    for model_dir in MODEL_DIRS:
-        print(f"开始导出 ONNX: {model_dir}")
-        export_to_onnx(model_dir)
-        print(f"导出完成: {model_dir.parent / f'{model_dir.name}-onnx'}")
+    ensure_stage_directories()
+
+    for spec in MODEL_SPECS:
+        source_dir = downloaded_model_dir(spec.local_name)
+        target_dir = exported_model_dir(spec.local_name)
+        print(f"开始导出 ONNX: {source_dir}")
+        exported = export_to_onnx(spec)
+        if exported:
+            print(f"导出完成: {target_dir}")
 
 
 if __name__ == "__main__":

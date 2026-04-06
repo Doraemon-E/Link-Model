@@ -1,5 +1,8 @@
-def main():
-    print("Hello from link-model!")
+from transform.pipeline import main as pipeline_main
+
+
+def main() -> None:
+    pipeline_main()
 
 
 if __name__ == "__main__":

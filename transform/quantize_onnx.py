@@ -1,86 +1,46 @@
 from __future__ import annotations
 
-import argparse
-from pathlib import Path
+import shutil
 
 from onnxruntime.quantization import QuantType, quantize_dynamic
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_MODELS_DIR = REPO_ROOT / "models"
-
-DEFAULT_MODEL_NAMES = (
-    "encoder_model.onnx",
-    "decoder_model.onnx",
-    "decoder_with_past_model.onnx",
-)
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Batch-quantize ONNX models in the models directory."
+try:
+    from .download_manifest import MODEL_SPECS, ModelSpec
+    from .paths import (
+        QUANTIZED_MODELS_DIR,
+        RAW_ONNX_FILE_NAMES,
+        ensure_stage_directories,
+        exported_model_dir,
+        quantized_model_dir,
     )
-    parser.add_argument(
-        "--models-dir",
-        type=Path,
-        default=DEFAULT_MODELS_DIR,
-        help="Root directory that contains exported *-onnx model folders.",
+    from .stage_helpers import (
+        copy_regular_files,
+        create_temporary_directory,
+        is_export_complete,
+        is_quantized_complete,
+        replace_directory,
     )
-    parser.add_argument(
-        "--suffix",
-        default="_int8",
-        help="Suffix inserted before the .onnx extension for quantized files.",
+    from .translation_manifest import write_translation_manifest
+except ImportError:
+    from download_manifest import MODEL_SPECS, ModelSpec
+    from paths import (
+        QUANTIZED_MODELS_DIR,
+        RAW_ONNX_FILE_NAMES,
+        ensure_stage_directories,
+        exported_model_dir,
+        quantized_model_dir,
     )
-    parser.add_argument(
-        "--overwrite",
-        action="store_true",
-        help="Overwrite quantized files if they already exist.",
+    from stage_helpers import (
+        copy_regular_files,
+        create_temporary_directory,
+        is_export_complete,
+        is_quantized_complete,
+        replace_directory,
     )
-    parser.add_argument(
-        "--file-name",
-        action="append",
-        dest="file_names",
-        help=(
-            "Specific ONNX file name to quantize. "
-            "Repeat this option to quantize more than one file."
-        ),
-    )
-    return parser.parse_args()
+    from translation_manifest import write_translation_manifest
 
 
-def resolve_target_files(models_dir: Path, file_names: tuple[str, ...]) -> list[Path]:
-    if not models_dir.exists():
-        raise FileNotFoundError(f"models directory not found: {models_dir}")
-
-    model_files: list[Path] = []
-    for model_dir in sorted(path for path in models_dir.iterdir() if path.is_dir()):
-        if not model_dir.name.endswith("-onnx"):
-            continue
-
-        for file_name in file_names:
-            model_file = model_dir / file_name
-            if model_file.exists():
-                model_files.append(model_file)
-
-    return model_files
-
-
-def summarize_onnx_directories(models_dir: Path, file_names: tuple[str, ...]) -> tuple[int, int]:
-    onnx_dir_count = 0
-    empty_onnx_dir_count = 0
-
-    for model_dir in sorted(path for path in models_dir.iterdir() if path.is_dir()):
-        if not model_dir.name.endswith("-onnx"):
-            continue
-
-        onnx_dir_count += 1
-        matched = any((model_dir / file_name).exists() for file_name in file_names)
-        if not matched:
-            empty_onnx_dir_count += 1
-
-    return onnx_dir_count, empty_onnx_dir_count
-
-
-def quantize_model(model_path: Path, output_path: Path) -> None:
+def quantize_model(model_path, output_path) -> None:
     quantize_dynamic(
         model_input=model_path.as_posix(),
         model_output=output_path.as_posix(),
@@ -88,55 +48,56 @@ def quantize_model(model_path: Path, output_path: Path) -> None:
     )
 
 
-def main() -> None:
-    args = parse_args()
-    file_names = tuple(args.file_names or DEFAULT_MODEL_NAMES)
-    models_dir = args.models_dir.resolve()
+def quantize_model_directory(spec: ModelSpec) -> bool:
+    source_dir = exported_model_dir(spec.local_name)
+    target_dir = quantized_model_dir(spec.local_name)
 
-    model_files = resolve_target_files(models_dir, file_names)
-    if not model_files:
-        onnx_dir_count, empty_onnx_dir_count = summarize_onnx_directories(
-            models_dir, file_names
-        )
-        if onnx_dir_count == 0:
-            print(f"未找到任何 *-onnx 模型目录: {models_dir}")
-            return
+    if is_quantized_complete(target_dir):
+        print(f"跳过已量化目录: {target_dir}")
+        return False
 
-        if empty_onnx_dir_count == onnx_dir_count:
-            print(
-                "未找到可量化的 ONNX 文件："
-                f" {models_dir} 下共有 {onnx_dir_count} 个 *-onnx 目录，"
-                "但都不包含默认的 encoder/decoder ONNX 文件。"
-            )
-            print("请确认这些目录没有被清空，或先重新导出 ONNX。")
-            return
+    if not is_export_complete(source_dir):
+        raise FileNotFoundError(f"未找到可量化的导出模型目录: {source_dir}")
 
-        print(f"未找到可量化的 ONNX 文件: {models_dir}")
-        return
-
-    quantized_count = 0
-    skipped_count = 0
-
-    for model_path in model_files:
-        output_path = model_path.with_name(
-            f"{model_path.stem}{args.suffix}{model_path.suffix}"
-        )
-
-        if output_path.exists() and not args.overwrite:
-            skipped_count += 1
-            print(f"跳过已存在文件: {output_path}")
-            continue
-
-        print(f"量化中: {model_path} -> {output_path}")
-        quantize_model(model_path, output_path)
-        quantized_count += 1
-        print(f"量化完成: {output_path}")
-
-    print(
-        "处理完成："
-        f" 量化 {quantized_count} 个文件，"
-        f" 跳过 {skipped_count} 个文件。"
+    temp_dir = create_temporary_directory(
+        QUANTIZED_MODELS_DIR,
+        f"tmp-{spec.local_name}",
     )
+
+    try:
+        copy_regular_files(
+            source_dir,
+            temp_dir,
+            exclude_suffixes={".onnx"},
+            exclude_names={"translation-manifest.json"},
+        )
+
+        for file_name in RAW_ONNX_FILE_NAMES:
+            model_path = source_dir / file_name
+            if not model_path.exists():
+                continue
+            output_path = temp_dir / file_name
+            print(f"量化中: {model_path} -> {output_path}")
+            quantize_model(model_path, output_path)
+
+        write_translation_manifest(spec, temp_dir)
+        replace_directory(temp_dir, target_dir)
+        return True
+    except Exception:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+        raise
+
+
+def main() -> None:
+    ensure_stage_directories()
+
+    for spec in MODEL_SPECS:
+        source_dir = exported_model_dir(spec.local_name)
+        target_dir = quantized_model_dir(spec.local_name)
+        print(f"开始量化 ONNX: {source_dir}")
+        quantized = quantize_model_directory(spec)
+        if quantized:
+            print(f"量化完成: {target_dir}")
 
 
 if __name__ == "__main__":
