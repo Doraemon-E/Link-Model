@@ -1,0 +1,16 @@
+board_type,lane,route,rank,system_id,comet,p50_ms,peak_rss_mb,int8_size,recommended,eliminated
+quality,seq2seq,zh-en,1,marian-direct,nan,83.259000,901.421875,238549357,false,true
+quality,seq2seq,zh-en,2,marian-pivot,nan,82.264375,713.015625,238549357,false,true
+quality,seq2seq,zh-en,3,m2m100-418m,nan,300.700625,2329.046875,1206789818,false,true
+efficiency,seq2seq,zh-en,1,marian-pivot,nan,82.264375,713.015625,238549357,false,true
+efficiency,seq2seq,zh-en,2,marian-direct,nan,83.259000,901.421875,238549357,false,true
+efficiency,seq2seq,zh-en,3,m2m100-418m,nan,300.700625,2329.046875,1206789818,false,true
+pareto_frontier,seq2seq,zh-en,1,marian-pivot,nan,82.264375,713.015625,238549357,false,true
+quality,seq2seq,zh-ja,1,m2m100-418m,nan,321.241833,2259.500000,1206789818,false,true
+quality,seq2seq,zh-ja,2,marian-pivot,nan,196.999625,938.421875,428919314,false,true
+quality,seq2seq,zh-ja,3,marian-direct,nan,110.720375,1230.531250,435966729,false,true
+efficiency,seq2seq,zh-ja,1,marian-direct,nan,110.720375,1230.531250,435966729,false,true
+efficiency,seq2seq,zh-ja,2,marian-pivot,nan,196.999625,938.421875,428919314,false,true
+efficiency,seq2seq,zh-ja,3,m2m100-418m,nan,321.241833,2259.500000,1206789818,false,true
+pareto_frontier,seq2seq,zh-ja,1,marian-direct,nan,110.720375,1230.531250,435966729,false,true
+pareto_frontier,seq2seq,zh-ja,2,marian-pivot,nan,196.999625,938.421875,428919314,false,true

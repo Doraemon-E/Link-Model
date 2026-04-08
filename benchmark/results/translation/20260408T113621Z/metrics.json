@@ -1,0 +1,202 @@
+{
+  "evaluations": [
+    {
+      "system_id": "m2m100-418m",
+      "lane": "seq2seq",
+      "route": "zh-en",
+      "artifact_ids": [
+        "m2m100-418m"
+      ],
+      "model_ids": [
+        "facebook/m2m100_418M"
+      ],
+      "licenses": [
+        "mit"
+      ],
+      "int8_size": 1206789818,
+      "cold_start_ms": 1448.2894579998629,
+      "p50_ms": 300.7006249999904,
+      "p95_ms": 1251.8316839001272,
+      "total_duration_s": 36.318989124999916,
+      "tokens_per_second": 143.72888106744892,
+      "peak_rss_mb": 2329.046875,
+      "empty_output_count": 0,
+      "error_count": 0,
+      "comet": null,
+      "chrf_pp": 43.626330772878994,
+      "bleu": 15.979084520917286,
+      "must_preserve_rate": 0.3068181818181818,
+      "eliminated": true,
+      "elimination_reasons": [
+        "must_preserve_rate < 0.85"
+      ],
+      "recommended": false
+    },
+    {
+      "system_id": "marian-direct",
+      "lane": "seq2seq",
+      "route": "zh-en",
+      "artifact_ids": [
+        "marian-zh-en"
+      ],
+      "model_ids": [
+        "Helsinki-NLP/opus-mt-zh-en"
+      ],
+      "licenses": [
+        "cc-by-4.0"
+      ],
+      "int8_size": 238549357,
+      "cold_start_ms": 363.102083000058,
+      "p50_ms": 83.2589999999982,
+      "p95_ms": 364.26076239997656,
+      "total_duration_s": 11.210738375000119,
+      "tokens_per_second": 404.55168380484974,
+      "peak_rss_mb": 901.421875,
+      "empty_output_count": 0,
+      "error_count": 0,
+      "comet": null,
+      "chrf_pp": 46.71979867433208,
+      "bleu": 21.34814188365705,
+      "must_preserve_rate": 0.4431818181818182,
+      "eliminated": true,
+      "elimination_reasons": [
+        "must_preserve_rate < 0.85"
+      ],
+      "recommended": false
+    },
+    {
+      "system_id": "marian-pivot",
+      "lane": "seq2seq",
+      "route": "zh-en",
+      "artifact_ids": [
+        "marian-zh-en"
+      ],
+      "model_ids": [
+        "Helsinki-NLP/opus-mt-zh-en"
+      ],
+      "licenses": [
+        "cc-by-4.0"
+      ],
+      "int8_size": 238549357,
+      "cold_start_ms": 1633.0717920000097,
+      "p50_ms": 82.26437500002248,
+      "p95_ms": 337.4217497999325,
+      "total_duration_s": 10.602992374999985,
+      "tokens_per_second": 427.7408001330977,
+      "peak_rss_mb": 713.015625,
+      "empty_output_count": 0,
+      "error_count": 0,
+      "comet": null,
+      "chrf_pp": 46.71979867433208,
+      "bleu": 21.34814188365705,
+      "must_preserve_rate": 0.4431818181818182,
+      "eliminated": true,
+      "elimination_reasons": [
+        "must_preserve_rate < 0.85"
+      ],
+      "recommended": false
+    },
+    {
+      "system_id": "m2m100-418m",
+      "lane": "seq2seq",
+      "route": "zh-ja",
+      "artifact_ids": [
+        "m2m100-418m"
+      ],
+      "model_ids": [
+        "facebook/m2m100_418M"
+      ],
+      "licenses": [
+        "mit"
+      ],
+      "int8_size": 1206789818,
+      "cold_start_ms": 1061.0504170001605,
+      "p50_ms": 321.2418329999309,
+      "p95_ms": 1377.7374953999697,
+      "total_duration_s": 37.79296037500012,
+      "tokens_per_second": 145.1351226375069,
+      "peak_rss_mb": 2259.5,
+      "empty_output_count": 0,
+      "error_count": 0,
+      "comet": null,
+      "chrf_pp": 19.75179987267093,
+      "bleu": 0.0,
+      "must_preserve_rate": 0.25842696629213485,
+      "eliminated": true,
+      "elimination_reasons": [
+        "must_preserve_rate < 0.85"
+      ],
+      "recommended": false
+    },
+    {
+      "system_id": "marian-direct",
+      "lane": "seq2seq",
+      "route": "zh-ja",
+      "artifact_ids": [
+        "marian-zh-ja"
+      ],
+      "model_ids": [
+        "Helsinki-NLP/opus-mt-tc-big-zh-ja"
+      ],
+      "licenses": [
+        "cc-by-4.0"
+      ],
+      "int8_size": 435966729,
+      "cold_start_ms": 568.680957999959,
+      "p50_ms": 110.72037500002807,
+      "p95_ms": 763.2661748000828,
+      "total_duration_s": 21.897826832999954,
+      "tokens_per_second": 354.8388564964663,
+      "peak_rss_mb": 1230.53125,
+      "empty_output_count": 5,
+      "error_count": 0,
+      "comet": null,
+      "chrf_pp": 1.0246152319109338,
+      "bleu": 0.0,
+      "must_preserve_rate": 0.0,
+      "eliminated": true,
+      "elimination_reasons": [
+        "empty_output_count > 0",
+        "must_preserve_rate < 0.85"
+      ],
+      "recommended": false
+    },
+    {
+      "system_id": "marian-pivot",
+      "lane": "seq2seq",
+      "route": "zh-ja",
+      "artifact_ids": [
+        "marian-zh-en",
+        "marian-en-ja"
+      ],
+      "model_ids": [
+        "Helsinki-NLP/opus-mt-zh-en",
+        "Helsinki-NLP/opus-mt-en-jap"
+      ],
+      "licenses": [
+        "cc-by-4.0",
+        "apache-2.0"
+      ],
+      "int8_size": 428919314,
+      "cold_start_ms": 568.5947920001126,
+      "p50_ms": 196.99962499998946,
+      "p95_ms": 585.6326829999489,
+      "total_duration_s": 19.918077582999786,
+      "tokens_per_second": 435.2990875157144,
+      "peak_rss_mb": 938.421875,
+      "empty_output_count": 0,
+      "error_count": 0,
+      "comet": null,
+      "chrf_pp": 5.865376056053882,
+      "bleu": 0.0,
+      "must_preserve_rate": 0.0,
+      "eliminated": true,
+      "elimination_reasons": [
+        "must_preserve_rate < 0.85"
+      ],
+      "recommended": false
+    }
+  ],
+  "recommended_by_lane_route": {},
+  "comet_available": false
+}
