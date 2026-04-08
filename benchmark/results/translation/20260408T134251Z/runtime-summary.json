@@ -1,0 +1,48 @@
+[
+  {
+    "system_id": "granite-3-1-2b-instruct",
+    "lane": "llm",
+    "route": "zh-en",
+    "artifact_ids": [
+      "granite-3-1-2b-instruct"
+    ],
+    "model_ids": [
+      "ibm-granite/granite-3.1-2b-instruct"
+    ],
+    "licenses": [
+      "unknown"
+    ],
+    "int8_size": 2642260109,
+    "cold_start_ms": 4731.611250026617,
+    "p50_ms": 2220.9742090199143,
+    "p95_ms": 11944.373279303545,
+    "total_duration_s": 304.21431449998636,
+    "tokens_per_second": 20.331111503883893,
+    "peak_rss_mb": 2900.0,
+    "empty_output_count": 0,
+    "error_count": 0
+  },
+  {
+    "system_id": "granite-3-1-2b-instruct",
+    "lane": "llm",
+    "route": "zh-ja",
+    "artifact_ids": [
+      "granite-3-1-2b-instruct"
+    ],
+    "model_ids": [
+      "ibm-granite/granite-3.1-2b-instruct"
+    ],
+    "licenses": [
+      "unknown"
+    ],
+    "int8_size": 2642260109,
+    "cold_start_ms": 2832.7996670268476,
+    "p50_ms": 4034.271250013262,
+    "p95_ms": 12365.648800099734,
+    "total_duration_s": 440.1397664999822,
+    "tokens_per_second": 21.18648784535794,
+    "peak_rss_mb": 2942.4375,
+    "empty_output_count": 0,
+    "error_count": 0
+  }
+]

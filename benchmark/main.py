@@ -16,11 +16,12 @@ if __package__ in {None, ""}:
     from benchmark.corpus import load_corpus
     from benchmark.paths import (
         DEFAULT_CONFIG_PATH,
+        artifact_stage_directory,
         artifact_manifest_path,
         ensure_directory,
         new_result_directory,
     )
-    from benchmark.prepare import load_artifact_manifest, prepare_benchmark
+    from benchmark.prepare import has_onnx_payload, load_artifact_manifest, prepare_benchmark
     from benchmark.registry import (
         load_executor,
         selected_routes,
@@ -31,8 +32,14 @@ if __package__ in {None, ""}:
 else:
     from .config import load_config
     from .corpus import load_corpus
-    from .paths import DEFAULT_CONFIG_PATH, artifact_manifest_path, ensure_directory, new_result_directory
-    from .prepare import load_artifact_manifest, prepare_benchmark
+    from .paths import (
+        DEFAULT_CONFIG_PATH,
+        artifact_stage_directory,
+        artifact_manifest_path,
+        ensure_directory,
+        new_result_directory,
+    )
+    from .prepare import has_onnx_payload, load_artifact_manifest, prepare_benchmark
     from .registry import load_executor, selected_routes, selected_systems, validate_config_selection
     from .report import generate_report, resolve_result_dir
 
@@ -127,6 +134,10 @@ def _system_readiness(config, system) -> str | None:
         manifest = load_artifact_manifest(manifest_path)
         if not manifest.quantize_success:
             return f"artifact {artifact_id} is not ready ({manifest.error_message or 'prepare failed'})"
+
+        quantized_dir = artifact_stage_directory(config.artifacts_root, "quantized", artifact_id)
+        if not has_onnx_payload(quantized_dir):
+            return f"artifact {artifact_id} is incomplete under {quantized_dir}; rerun prepare"
 
     return None
 

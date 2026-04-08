@@ -6,7 +6,7 @@ from pathlib import Path
 from .config import load_config
 from .exporters import download_model, export_model, fetch_model_metadata
 from .paths import artifact_manifest_path, artifact_stage_directory, ensure_directory
-from .quantize import quantize_exported_model
+from .quantize import has_quantized_onnx_payload, quantize_exported_model
 from .registry import selected_artifacts, validate_config_selection
 from .schemas import ArtifactManifest
 
@@ -23,7 +23,6 @@ def prepare_benchmark(config_path: Path | None = None, *, force: bool = False) -
         export_dir = artifact_stage_directory(config.artifacts_root, "exported", artifact.artifact_id)
         quantized_dir = artifact_stage_directory(config.artifacts_root, "quantized", artifact.artifact_id)
         manifest_path = artifact_manifest_path(config.artifacts_root, artifact.artifact_id)
-        manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
         if force:
             for directory in (download_dir, export_dir, quantized_dir):
@@ -34,15 +33,15 @@ def prepare_benchmark(config_path: Path | None = None, *, force: bool = False) -
         prepare_error: Exception | None = None
 
         try:
-            if not download_dir.exists():
+            if not has_download_payload(download_dir):
                 print(f"[prepare] downloading {artifact.artifact_id} <- {artifact.model_id}")
                 download_model(artifact, download_dir)
 
-            if not export_dir.exists():
+            if not has_onnx_payload(export_dir):
                 print(f"[prepare] exporting ONNX {artifact.artifact_id}")
                 export_model(artifact, download_dir, export_dir)
 
-            if not quantized_dir.exists():
+            if not has_quantized_onnx_payload(export_dir, quantized_dir):
                 print(f"[prepare] quantizing INT8 {artifact.artifact_id}")
                 quantize_exported_model(
                     export_dir,
@@ -53,8 +52,12 @@ def prepare_benchmark(config_path: Path | None = None, *, force: bool = False) -
             prepare_error = exc
             print(f"[prepare] failed artifact={artifact.artifact_id}: {exc}")
 
-        fp32_size = directory_size_bytes(export_dir) if export_dir.exists() else 0
-        int8_size = directory_size_bytes(quantized_dir) if quantized_dir.exists() else 0
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+
+        export_success = has_onnx_payload(export_dir)
+        quantize_success = has_quantized_onnx_payload(export_dir, quantized_dir)
+        fp32_size = directory_size_bytes(export_dir) if export_success else 0
+        int8_size = directory_size_bytes(quantized_dir) if quantize_success else 0
         manifest = ArtifactManifest(
             artifact_id=artifact.artifact_id,
             model_id=artifact.model_id,
@@ -65,8 +68,8 @@ def prepare_benchmark(config_path: Path | None = None, *, force: bool = False) -
             fp32_size=fp32_size,
             int8_size=int8_size,
             quantization_ratio=(float(int8_size) / float(fp32_size)) if fp32_size else 0.0,
-            export_success=export_dir.exists(),
-            quantize_success=quantized_dir.exists(),
+            export_success=export_success,
+            quantize_success=quantize_success,
             error_message=str(prepare_error) if prepare_error is not None else None,
         )
         manifest_path.write_text(
@@ -87,6 +90,16 @@ def load_artifact_manifest(manifest_path: Path) -> ArtifactManifest:
     return ArtifactManifest(**payload)
 
 
+def has_download_payload(directory: Path) -> bool:
+    return _has_any_files(directory)
+
+
+def has_onnx_payload(directory: Path) -> bool:
+    if not directory.exists():
+        return False
+    return any(path.is_file() and path.suffix == ".onnx" for path in directory.rglob("*"))
+
+
 def _safe_fetch_metadata(model_id: str) -> dict[str, str]:
     try:
         return fetch_model_metadata(model_id)
@@ -101,3 +114,9 @@ def _remove_directory(directory: Path) -> None:
     import shutil
 
     shutil.rmtree(directory, ignore_errors=True)
+
+
+def _has_any_files(directory: Path) -> bool:
+    if not directory.exists():
+        return False
+    return any(path.is_file() for path in directory.rglob("*"))

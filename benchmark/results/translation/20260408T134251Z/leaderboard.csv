@@ -1,0 +1,7 @@
+board_type,lane,route,rank,system_id,comet,p50_ms,peak_rss_mb,int8_size,recommended,eliminated
+quality,llm,zh-en,1,granite-3-1-2b-instruct,nan,2220.974209,2900.000000,2642260109,false,true
+efficiency,llm,zh-en,1,granite-3-1-2b-instruct,nan,2220.974209,2900.000000,2642260109,false,true
+pareto_frontier,llm,zh-en,1,granite-3-1-2b-instruct,nan,2220.974209,2900.000000,2642260109,false,true
+quality,llm,zh-ja,1,granite-3-1-2b-instruct,nan,4034.271250,2942.437500,2642260109,false,true
+efficiency,llm,zh-ja,1,granite-3-1-2b-instruct,nan,4034.271250,2942.437500,2642260109,false,true
+pareto_frontier,llm,zh-ja,1,granite-3-1-2b-instruct,nan,4034.271250,2942.437500,2642260109,false,true
