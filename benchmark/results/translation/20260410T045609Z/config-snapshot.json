@@ -1,0 +1,219 @@
+{
+  "shared_paths": {
+    "translation_models_root": "/Users/doracmon/Code/Aura/link-model/models/translation",
+    "translation_results_root": "/Users/doracmon/Code/Aura/link-model/benchmark/results/translation",
+    "translation_catalog_output": "/Users/doracmon/Code/Aura/link-model/../link/link/Resource/translation-catalog.json",
+    "speech_models_root": "/Users/doracmon/Code/Aura/link-model/models/speech",
+    "speech_catalog_output": "/Users/doracmon/Code/Aura/link-model/../link/link/Resource/speech-catalog.json",
+    "corpus_path": "/Users/doracmon/Code/Aura/link-model/../Link/linkTests/Fixtures/translation_performance_corpus.json"
+  },
+  "translation": {
+    "artifacts": {
+      "opus-mt-zh-en": {
+        "artifact_id": "opus-mt-zh-en",
+        "model_id": "Helsinki-NLP/opus-mt-zh-en",
+        "family": "marian",
+        "source_langs": [
+          "zh"
+        ],
+        "target_langs": [
+          "en"
+        ],
+        "artifact_format": "onnx",
+        "runtime_backend": "onnxruntime",
+        "quantization_format": "onnx_qint8",
+        "quantization_source": "local_prepare",
+        "package_enabled": true,
+        "package_source": "zho",
+        "package_target": "eng"
+      },
+      "opus-mt-en-ja": {
+        "artifact_id": "opus-mt-en-ja",
+        "model_id": "Helsinki-NLP/opus-mt-en-jap",
+        "family": "marian",
+        "source_langs": [
+          "en"
+        ],
+        "target_langs": [
+          "ja"
+        ],
+        "artifact_format": "onnx",
+        "runtime_backend": "onnxruntime",
+        "quantization_format": "onnx_qint8",
+        "quantization_source": "local_prepare",
+        "package_enabled": true,
+        "package_source": "eng",
+        "package_target": "jpn"
+      },
+      "opus-mt-zh-ja": {
+        "artifact_id": "opus-mt-zh-ja",
+        "model_id": "Helsinki-NLP/opus-mt-tc-big-zh-ja",
+        "family": "marian",
+        "source_langs": [
+          "zh"
+        ],
+        "target_langs": [
+          "ja"
+        ],
+        "artifact_format": "onnx",
+        "runtime_backend": "onnxruntime",
+        "quantization_format": "onnx_qint8",
+        "quantization_source": "local_prepare",
+        "package_enabled": true,
+        "package_source": "zho",
+        "package_target": "jpn"
+      },
+      "hy-mt1.5-1.8b-gguf-q4km": {
+        "artifact_id": "hy-mt1.5-1.8b-gguf-q4km",
+        "model_id": "tencent/HY-MT1.5-1.8B-GGUF",
+        "family": "gguf_causal_llm",
+        "source_langs": [
+          "zh"
+        ],
+        "target_langs": [
+          "en",
+          "ja"
+        ],
+        "artifact_format": "gguf",
+        "runtime_backend": "llama_cpp",
+        "quantization_format": "gguf_q4_k_m",
+        "quantization_source": "vendor_prequantized",
+        "package_enabled": false,
+        "package_source": null,
+        "package_target": null
+      }
+    },
+    "systems": {
+      "opus-mt-direct": {
+        "system_id": "opus-mt-direct",
+        "display_name": "Opus MT Direct",
+        "strategy": "direct",
+        "route_plans": {
+          "zh-en": {
+            "route_id": "zh-en",
+            "artifact_ids": [
+              "opus-mt-zh-en"
+            ]
+          },
+          "zh-ja": {
+            "route_id": "zh-ja",
+            "artifact_ids": [
+              "opus-mt-zh-ja"
+            ]
+          }
+        },
+        "baseline": true,
+        "lane": "translation"
+      },
+      "opus-mt-pivot-via-en": {
+        "system_id": "opus-mt-pivot-via-en",
+        "display_name": "Opus MT Pivot via EN",
+        "strategy": "pivot_via_en",
+        "route_plans": {
+          "zh-ja": {
+            "route_id": "zh-ja",
+            "artifact_ids": [
+              "opus-mt-zh-en",
+              "opus-mt-en-ja"
+            ]
+          }
+        },
+        "baseline": false,
+        "lane": "translation"
+      },
+      "hy-mt1.5-1.8b-gguf-q4km": {
+        "system_id": "hy-mt1.5-1.8b-gguf-q4km",
+        "display_name": "HY MT 1.5 1.8B GGUF Q4_K_M",
+        "strategy": "direct",
+        "route_plans": {
+          "zh-en": {
+            "route_id": "zh-en",
+            "artifact_ids": [
+              "hy-mt1.5-1.8b-gguf-q4km"
+            ]
+          },
+          "zh-ja": {
+            "route_id": "zh-ja",
+            "artifact_ids": [
+              "hy-mt1.5-1.8b-gguf-q4km"
+            ]
+          }
+        },
+        "baseline": false,
+        "lane": "translation"
+      }
+    },
+    "benchmark": {
+      "routes": {
+        "zh-en": {
+          "route_id": "zh-en",
+          "source_lang": "zh",
+          "target_lang": "en",
+          "reference_key": "en"
+        },
+        "zh-ja": {
+          "route_id": "zh-ja",
+          "source_lang": "zh",
+          "target_lang": "ja",
+          "reference_key": "ja"
+        }
+      },
+      "selected_systems": [
+        "opus-mt-direct",
+        "opus-mt-pivot-via-en",
+        "hy-mt1.5-1.8b-gguf-q4km"
+      ],
+      "selected_routes": [
+        "zh-en",
+        "zh-ja"
+      ],
+      "quantization": {
+        "weight_type": "qint8"
+      },
+      "decode": {
+        "batch_size": 1,
+        "do_sample": false,
+        "num_beams": 1,
+        "greedy_decode": true,
+        "max_new_tokens": 256,
+        "warmup_iterations": 2,
+        "benchmark_iterations": 5
+      },
+      "metrics": {
+        "comet_model": "wmt22-comet-da",
+        "comet_batch_size": 8,
+        "compute_bleu": true,
+        "compute_chrf_pp": true
+      },
+      "decision_policy": {
+        "must_preserve_threshold": 0.85,
+        "comet_delta_threshold": 0.03,
+        "latency_tie_threshold": 0.1
+      }
+    },
+    "package": {
+      "package_version": "1.0.0",
+      "min_app_version": "1.0.0",
+      "archive_base_url": "https://link.hackerapp.site/link/translation/packages"
+    },
+    "report": {
+      "title": "Translation Benchmark Report"
+    }
+  },
+  "speech": {
+    "artifacts": {
+      "whisper-base-q5_1": {
+        "package_id": "whisper-base-q5_1",
+        "repo_id": "osllmai-community/whisper.cpp",
+        "source_file_name": "ggml-base-q5_1.bin",
+        "local_file_name": "ggml-base-q5_1.bin",
+        "family": "whisper"
+      }
+    },
+    "package": {
+      "package_version": "1.0.0",
+      "min_app_version": "1.0.0",
+      "archive_base_url": "https://link.hackerapp.site/link/speech/packages"
+    }
+  }
+}

@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
 from main import build_parser
 from shared.config import load_config
+from translation.benchmark import run_benchmark, smoke_test_system
 from translation.report import generate_report
 from translation.schemas import PredictionRecord, RuntimeSummary
 
@@ -93,6 +95,99 @@ class UnifiedPipelineTests(unittest.TestCase):
             self.assertIn("mustPreserve hits/total (%)", report_text)
             self.assertIn("1/2 (50.00%)", report_text)
             self.assertIn("must_preserve_rate 50.00% < 85.00%", report_text)
+
+    def test_smoke_test_system_skips_route_when_smoke_output_is_empty(self) -> None:
+        config = load_config()
+        system = config.translation.systems["opus-mt-direct"]
+        routes = [config.translation.benchmark.routes["zh-en"], config.translation.benchmark.routes["zh-ja"]]
+
+        def fake_smoke_test(_config, route, _route_plan, _corpus_entry) -> None:
+            if route.route_id == "zh-ja":
+                raise RuntimeError("empty smoke output for route=zh-ja")
+
+        with patch("translation.benchmark._smoke_test_direct_route", side_effect=fake_smoke_test):
+            runnable_routes = smoke_test_system(config, system, routes, corpus_entry=object())
+
+        self.assertEqual([route.route_id for route in runnable_routes], ["zh-en"])
+
+    def test_run_benchmark_continues_when_some_routes_fail_smoke_test(self) -> None:
+        base_config = load_config()
+        system = base_config.translation.systems["opus-mt-direct"]
+        zh_en_route = base_config.translation.benchmark.routes["zh-en"]
+        zh_ja_route = base_config.translation.benchmark.routes["zh-ja"]
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = replace(
+                base_config,
+                shared_paths=replace(
+                    base_config.shared_paths,
+                    translation_results_root=Path(temp_dir),
+                ),
+            )
+            sample_corpus = [type("Entry", (), {"bucket": "short", "source_text": "你好"})()]
+            sample_prediction = PredictionRecord(
+                system_id=system.system_id,
+                lane=system.lane,
+                route=zh_en_route.route_id,
+                iteration=1,
+                entry_id="sample",
+                bucket="short",
+                source_text="你好",
+                translated_text="hello",
+                reference_text="hello",
+                must_preserve=[],
+                sentence_latency_ms=1.0,
+                output_token_count=1,
+                error=None,
+                display_name=system.display_name,
+                strategy=system.strategy,
+                runtime_backend="onnxruntime",
+            )
+            sample_summary = RuntimeSummary(
+                system_id=system.system_id,
+                lane=system.lane,
+                route=zh_en_route.route_id,
+                artifact_ids=["opus-mt-zh-en"],
+                model_ids=["Helsinki-NLP/opus-mt-zh-en"],
+                licenses=["apache-2.0"],
+                quantized_size=100,
+                cold_start_ms=1.0,
+                p50_ms=1.0,
+                p95_ms=1.0,
+                total_duration_s=1.0,
+                tokens_per_second=1.0,
+                peak_rss_mb=1.0,
+                empty_output_count=0,
+                error_count=0,
+                display_name=system.display_name,
+                strategy=system.strategy,
+                runtime_backend="onnxruntime",
+            )
+
+            with patch("translation.benchmark.load_corpus", return_value=sample_corpus), patch(
+                "translation.benchmark.selected_routes",
+                return_value=[zh_en_route, zh_ja_route],
+            ), patch(
+                "translation.benchmark.selected_systems",
+                return_value=[system],
+            ), patch(
+                "translation.benchmark.system_readiness",
+                return_value=None,
+            ), patch(
+                "translation.benchmark.smoke_test_system",
+                return_value=[zh_en_route],
+            ), patch(
+                "translation.benchmark.run_system_route",
+                return_value=([sample_prediction], sample_summary),
+            ):
+                result_dir = run_benchmark(config, timestamp="20260410T000000Z")
+
+            runtime_summary_payload = json.loads((result_dir / "runtime-summary.json").read_text(encoding="utf-8"))
+            predictions_payload = (result_dir / "predictions.jsonl").read_text(encoding="utf-8").strip().splitlines()
+
+            self.assertEqual(len(runtime_summary_payload), 1)
+            self.assertEqual(runtime_summary_payload[0]["route"], "zh-en")
+            self.assertEqual(len(predictions_payload), 1)
 
     def _sample_predictions(self) -> list[PredictionRecord]:
         return [

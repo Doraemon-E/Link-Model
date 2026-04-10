@@ -1,0 +1,261 @@
+{
+  "evaluations": [
+    {
+      "system_id": "hy-mt1.5-1.8b-gguf-q4km",
+      "lane": "translation",
+      "route": "zh-en",
+      "artifact_ids": [
+        "hy-mt1.5-1.8b-gguf-q4km"
+      ],
+      "model_ids": [
+        "tencent/HY-MT1.5-1.8B-GGUF"
+      ],
+      "licenses": [
+        "unknown"
+      ],
+      "quantized_size": 1133081156,
+      "cold_start_ms": 1175.587874953635,
+      "p50_ms": 1220.115583972074,
+      "p95_ms": 4974.103983788517,
+      "total_duration_s": 159.98770808399422,
+      "tokens_per_second": 34.5973789852161,
+      "peak_rss_mb": 2568.453125,
+      "empty_output_count": 0,
+      "error_count": 0,
+      "comet": null,
+      "chrf_pp": 56.256962118682054,
+      "bleu": 26.06053768397477,
+      "must_preserve_rate": 0.7840909090909091,
+      "must_preserve_hits": 345,
+      "must_preserve_total": 440,
+      "display_name": "HY MT 1.5 1.8B GGUF Q4_K_M",
+      "strategy": "direct",
+      "runtime_backend": "llama_cpp",
+      "eliminated": true,
+      "elimination_reasons": [
+        "must_preserve_rate 78.41% < 85.00%"
+      ],
+      "recommended": false,
+      "gate_checks": {
+        "error_count": {
+          "value": 0,
+          "threshold": 0,
+          "passed": true,
+          "reason": "error_count == 0"
+        },
+        "empty_output_count": {
+          "value": 0,
+          "threshold": 0,
+          "passed": true,
+          "reason": "empty_output_count == 0"
+        },
+        "must_preserve_rate": {
+          "value": 0.7840909090909091,
+          "threshold": 0.85,
+          "passed": false,
+          "reason": "must_preserve_rate 78.41% < 85.00%"
+        },
+        "comet_delta": {
+          "value": null,
+          "threshold": null,
+          "passed": null,
+          "reason": "COMET unavailable; gate skipped."
+        }
+      }
+    },
+    {
+      "system_id": "opus-mt-direct",
+      "lane": "translation",
+      "route": "zh-en",
+      "artifact_ids": [
+        "opus-mt-zh-en"
+      ],
+      "model_ids": [
+        "Helsinki-NLP/opus-mt-zh-en"
+      ],
+      "licenses": [
+        "cc-by-4.0"
+      ],
+      "quantized_size": 238549975,
+      "cold_start_ms": 315.2537090354599,
+      "p50_ms": 78.50895798765123,
+      "p95_ms": 331.53179641230963,
+      "total_duration_s": 10.144929874979425,
+      "tokens_per_second": 453.4708735404291,
+      "peak_rss_mb": 858.71875,
+      "empty_output_count": 0,
+      "error_count": 0,
+      "comet": null,
+      "chrf_pp": 46.442196698216456,
+      "bleu": 21.74928636662977,
+      "must_preserve_rate": 0.6590909090909091,
+      "must_preserve_hits": 290,
+      "must_preserve_total": 440,
+      "display_name": "Opus MT Direct",
+      "strategy": "direct",
+      "runtime_backend": "onnxruntime",
+      "eliminated": true,
+      "elimination_reasons": [
+        "must_preserve_rate 65.91% < 85.00%"
+      ],
+      "recommended": false,
+      "gate_checks": {
+        "error_count": {
+          "value": 0,
+          "threshold": 0,
+          "passed": true,
+          "reason": "error_count == 0"
+        },
+        "empty_output_count": {
+          "value": 0,
+          "threshold": 0,
+          "passed": true,
+          "reason": "empty_output_count == 0"
+        },
+        "must_preserve_rate": {
+          "value": 0.6590909090909091,
+          "threshold": 0.85,
+          "passed": false,
+          "reason": "must_preserve_rate 65.91% < 85.00%"
+        },
+        "comet_delta": {
+          "value": null,
+          "threshold": null,
+          "passed": null,
+          "reason": "COMET unavailable; gate skipped."
+        }
+      }
+    },
+    {
+      "system_id": "hy-mt1.5-1.8b-gguf-q4km",
+      "lane": "translation",
+      "route": "zh-ja",
+      "artifact_ids": [
+        "hy-mt1.5-1.8b-gguf-q4km"
+      ],
+      "model_ids": [
+        "tencent/HY-MT1.5-1.8B-GGUF"
+      ],
+      "licenses": [
+        "unknown"
+      ],
+      "quantized_size": 1133081156,
+      "cold_start_ms": 1246.1588750011288,
+      "p50_ms": 1498.8094170112163,
+      "p95_ms": 6877.96432880568,
+      "total_duration_s": 203.35147316701477,
+      "tokens_per_second": 35.99727124421331,
+      "peak_rss_mb": 2472.5625,
+      "empty_output_count": 0,
+      "error_count": 0,
+      "comet": null,
+      "chrf_pp": 30.689504219705398,
+      "bleu": 0.0,
+      "must_preserve_rate": 0.6853932584269663,
+      "must_preserve_hits": 305,
+      "must_preserve_total": 445,
+      "display_name": "HY MT 1.5 1.8B GGUF Q4_K_M",
+      "strategy": "direct",
+      "runtime_backend": "llama_cpp",
+      "eliminated": true,
+      "elimination_reasons": [
+        "must_preserve_rate 68.54% < 85.00%"
+      ],
+      "recommended": false,
+      "gate_checks": {
+        "error_count": {
+          "value": 0,
+          "threshold": 0,
+          "passed": true,
+          "reason": "error_count == 0"
+        },
+        "empty_output_count": {
+          "value": 0,
+          "threshold": 0,
+          "passed": true,
+          "reason": "empty_output_count == 0"
+        },
+        "must_preserve_rate": {
+          "value": 0.6853932584269663,
+          "threshold": 0.85,
+          "passed": false,
+          "reason": "must_preserve_rate 68.54% < 85.00%"
+        },
+        "comet_delta": {
+          "value": null,
+          "threshold": null,
+          "passed": null,
+          "reason": "COMET unavailable; gate skipped."
+        }
+      }
+    },
+    {
+      "system_id": "opus-mt-pivot-via-en",
+      "lane": "translation",
+      "route": "zh-ja",
+      "artifact_ids": [
+        "opus-mt-zh-en",
+        "opus-mt-en-ja"
+      ],
+      "model_ids": [
+        "Helsinki-NLP/opus-mt-zh-en",
+        "Helsinki-NLP/opus-mt-en-jap"
+      ],
+      "licenses": [
+        "cc-by-4.0",
+        "apache-2.0"
+      ],
+      "quantized_size": 428920550,
+      "cold_start_ms": 572.2283740178682,
+      "p50_ms": 205.16895898617804,
+      "p95_ms": 514.1629837744404,
+      "total_duration_s": 18.717131250014063,
+      "tokens_per_second": 452.8369563095604,
+      "peak_rss_mb": 1028.609375,
+      "empty_output_count": 0,
+      "error_count": 0,
+      "comet": null,
+      "chrf_pp": 5.548944449929655,
+      "bleu": 0.0,
+      "must_preserve_rate": 0.011235955056179775,
+      "must_preserve_hits": 5,
+      "must_preserve_total": 445,
+      "display_name": "Opus MT Pivot via EN",
+      "strategy": "pivot_via_en",
+      "runtime_backend": "onnxruntime",
+      "eliminated": true,
+      "elimination_reasons": [
+        "must_preserve_rate 1.12% < 85.00%"
+      ],
+      "recommended": false,
+      "gate_checks": {
+        "error_count": {
+          "value": 0,
+          "threshold": 0,
+          "passed": true,
+          "reason": "error_count == 0"
+        },
+        "empty_output_count": {
+          "value": 0,
+          "threshold": 0,
+          "passed": true,
+          "reason": "empty_output_count == 0"
+        },
+        "must_preserve_rate": {
+          "value": 0.011235955056179775,
+          "threshold": 0.85,
+          "passed": false,
+          "reason": "must_preserve_rate 1.12% < 85.00%"
+        },
+        "comet_delta": {
+          "value": null,
+          "threshold": null,
+          "passed": null,
+          "reason": "COMET unavailable; gate skipped."
+        }
+      }
+    }
+  ],
+  "recommended_by_route": {},
+  "comet_available": false
+}

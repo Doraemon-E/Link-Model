@@ -34,8 +34,12 @@ def run_benchmark(config: RootConfig, *, timestamp: str | None = None) -> Path:
             print(f"[translation benchmark] skip system={system.system_id}: {readiness}")
             continue
 
-        smoke_test_system(config, system, supported_routes, smoke_entry)
-        for route in supported_routes:
+        runnable_routes = smoke_test_system(config, system, supported_routes, smoke_entry)
+        if not runnable_routes:
+            print(f"[translation benchmark] skip system={system.system_id}: no routes passed smoke test")
+            continue
+
+        for route in runnable_routes:
             print(f"[translation benchmark] system={system.system_id} route={route.route_id}")
             route_predictions, runtime_summary = run_system_route(config, system, route, corpus_entries)
             predictions.extend(route_predictions)
@@ -117,13 +121,20 @@ def system_readiness(config: RootConfig, system: SystemSpec, routes: list[RouteS
     return None
 
 
-def smoke_test_system(config: RootConfig, system: SystemSpec, routes: list[RouteSpec], corpus_entry) -> None:
+def smoke_test_system(config: RootConfig, system: SystemSpec, routes: list[RouteSpec], corpus_entry) -> list[RouteSpec]:
+    runnable_routes: list[RouteSpec] = []
     for route in routes:
         route_plan = system.route_plans[route.route_id]
-        if system.strategy == "pivot_via_en":
-            _smoke_test_pivot_route(config, route, route_plan, corpus_entry)
-        else:
-            _smoke_test_direct_route(config, route, route_plan, corpus_entry)
+        try:
+            if system.strategy == "pivot_via_en":
+                _smoke_test_pivot_route(config, route, route_plan, corpus_entry)
+            else:
+                _smoke_test_direct_route(config, route, route_plan, corpus_entry)
+        except Exception as exc:
+            print(f"[translation benchmark] skip system={system.system_id} route={route.route_id}: smoke test failed ({exc})")
+            continue
+        runnable_routes.append(route)
+    return runnable_routes
 
 
 def select_smoke_entry(corpus_entries):

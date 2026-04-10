@@ -1,0 +1,11 @@
+board_type,route,rank,system_id,display_name,strategy,comet,bleu,chrf_pp,must_preserve_rate,must_preserve_hits,must_preserve_total,p50_ms,peak_rss_mb,quantized_size,recommended,eliminated,status
+quality,zh-en,1,hy-mt1.5-1.8b-gguf-q4km,HY MT 1.5 1.8B GGUF Q4_K_M,direct,,26.060538,56.256962,0.784091,345,440,1220.115584,2568.453125,1133081156,false,true,eliminated
+quality,zh-en,2,opus-mt-direct,Opus MT Direct,direct,,21.749286,46.442197,0.659091,290,440,78.508958,858.718750,238549975,false,true,eliminated
+efficiency,zh-en,1,opus-mt-direct,Opus MT Direct,direct,,21.749286,46.442197,0.659091,290,440,78.508958,858.718750,238549975,false,true,eliminated
+efficiency,zh-en,2,hy-mt1.5-1.8b-gguf-q4km,HY MT 1.5 1.8B GGUF Q4_K_M,direct,,26.060538,56.256962,0.784091,345,440,1220.115584,2568.453125,1133081156,false,true,eliminated
+pareto_frontier,zh-en,1,opus-mt-direct,Opus MT Direct,direct,,21.749286,46.442197,0.659091,290,440,78.508958,858.718750,238549975,false,true,eliminated
+quality,zh-ja,1,hy-mt1.5-1.8b-gguf-q4km,HY MT 1.5 1.8B GGUF Q4_K_M,direct,,0.000000,30.689504,0.685393,305,445,1498.809417,2472.562500,1133081156,false,true,eliminated
+quality,zh-ja,2,opus-mt-pivot-via-en,Opus MT Pivot via EN,pivot_via_en,,0.000000,5.548944,0.011236,5,445,205.168959,1028.609375,428920550,false,true,eliminated
+efficiency,zh-ja,1,opus-mt-pivot-via-en,Opus MT Pivot via EN,pivot_via_en,,0.000000,5.548944,0.011236,5,445,205.168959,1028.609375,428920550,false,true,eliminated
+efficiency,zh-ja,2,hy-mt1.5-1.8b-gguf-q4km,HY MT 1.5 1.8B GGUF Q4_K_M,direct,,0.000000,30.689504,0.685393,305,445,1498.809417,2472.562500,1133081156,false,true,eliminated
+pareto_frontier,zh-ja,1,opus-mt-pivot-via-en,Opus MT Pivot via EN,pivot_via_en,,0.000000,5.548944,0.011236,5,445,205.168959,1028.609375,428920550,false,true,eliminated
