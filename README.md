@@ -39,6 +39,42 @@ benchmark 结果：
 ./.venv/bin/python main.py speech all
 ```
 
+## 常用示例
+
+```bash
+# 1. 跑完整 translation 链路
+./.venv/bin/python main.py translation all
+
+# 2. 只准备模型资产，不跑 benchmark
+./.venv/bin/python main.py translation prepare
+
+# 3. 分步跑 translation benchmark
+./.venv/bin/python main.py translation benchmark
+./.venv/bin/python main.py translation report
+
+# 4. 指定一个固定时间戳，方便重复覆盖同一轮结果
+./.venv/bin/python main.py translation benchmark --timestamp 20260410T120000Z
+./.venv/bin/python main.py translation report --result-dir benchmark/results/translation/20260410T120000Z
+
+# 5. 只打 translation 包和 catalog
+./.venv/bin/python main.py translation package
+./.venv/bin/python main.py translation catalog
+
+# 6. 跑完整 speech 链路
+./.venv/bin/python main.py speech all
+
+# 7. 只更新 speech catalog
+./.venv/bin/python main.py speech catalog
+```
+
+如果想先看命令结构，可以直接跑：
+
+```bash
+./.venv/bin/python main.py -h
+./.venv/bin/python main.py translation -h
+./.venv/bin/python main.py speech -h
+```
+
 `translation all` 会执行：
 
 1. 迁移旧 translation 资产
