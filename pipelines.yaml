@@ -1,0 +1,123 @@
+shared:
+  paths:
+    translation_models_root: models/translation
+    translation_results_root: benchmark/results/translation
+    translation_catalog_output: ../link/link/Resource/translation-catalog.json
+    speech_models_root: models/speech
+    speech_catalog_output: ../link/link/Resource/speech-catalog.json
+    corpus_path: ../Link/linkTests/Fixtures/translation_performance_corpus.json
+translation:
+  artifacts:
+    opus-mt-zh-en:
+      model_id: Helsinki-NLP/opus-mt-zh-en
+      family: marian
+      source_langs: [zh]
+      target_langs: [en]
+      package_enabled: true
+      package_source: zho
+      package_target: eng
+    opus-mt-en-ja:
+      model_id: Helsinki-NLP/opus-mt-en-jap
+      family: marian
+      source_langs: [en]
+      target_langs: [ja]
+      package_enabled: true
+      package_source: eng
+      package_target: jpn
+    opus-mt-zh-ja:
+      model_id: Helsinki-NLP/opus-mt-tc-big-zh-ja
+      family: marian
+      source_langs: [zh]
+      target_langs: [ja]
+      package_enabled: true
+      package_source: zho
+      package_target: jpn
+    hy-mt1.5-1.8b-gguf-q4km:
+      model_id: tencent/HY-MT1.5-1.8B-GGUF
+      family: gguf_causal_llm
+      source_langs: [zh]
+      target_langs: [en, ja]
+      artifact_format: gguf
+      runtime_backend: llama_cpp
+      quantization_format: gguf_q4_k_m
+      quantization_source: vendor_prequantized
+      package_enabled: false
+  systems:
+    opus-mt-direct:
+      display_name: Opus MT Direct
+      strategy: direct
+      baseline: true
+      route_plans:
+        zh-en:
+          artifact_ids: [opus-mt-zh-en]
+        zh-ja:
+          artifact_ids: [opus-mt-zh-ja]
+    opus-mt-pivot-via-en:
+      display_name: Opus MT Pivot via EN
+      strategy: pivot_via_en
+      baseline: false
+      route_plans:
+        zh-ja:
+          artifact_ids: [opus-mt-zh-en, opus-mt-en-ja]
+    hy-mt1.5-1.8b-gguf-q4km:
+      display_name: HY MT 1.5 1.8B GGUF Q4_K_M
+      strategy: direct
+      baseline: false
+      route_plans:
+        zh-en:
+          artifact_ids: [hy-mt1.5-1.8b-gguf-q4km]
+        zh-ja:
+          artifact_ids: [hy-mt1.5-1.8b-gguf-q4km]
+  benchmark:
+    routes:
+      zh-en:
+        source_lang: zh
+        target_lang: en
+        reference_key: en
+      zh-ja:
+        source_lang: zh
+        target_lang: ja
+        reference_key: ja
+    selected_systems:
+      - opus-mt-direct
+      - opus-mt-pivot-via-en
+      - hy-mt1.5-1.8b-gguf-q4km
+    selected_routes:
+      - zh-en
+      - zh-ja
+    quantization:
+      weight_type: qint8
+    decode:
+      batch_size: 1
+      do_sample: false
+      num_beams: 1
+      greedy_decode: true
+      max_new_tokens: 256
+      warmup_iterations: 2
+      benchmark_iterations: 5
+    metrics:
+      comet_model: wmt22-comet-da
+      comet_batch_size: 8
+      compute_bleu: true
+      compute_chrf_pp: true
+    decision_policy:
+      must_preserve_threshold: 0.85
+      comet_delta_threshold: 0.03
+      latency_tie_threshold: 0.10
+  package:
+    package_version: 1.0.0
+    min_app_version: 1.0.0
+    archive_base_url: https://link.hackerapp.site/link/translation/packages
+  report:
+    title: Translation Benchmark Report
+speech:
+  artifacts:
+    whisper-base-q5_1:
+      repo_id: osllmai-community/whisper.cpp
+      source_file_name: ggml-base-q5_1.bin
+      local_file_name: ggml-base-q5_1.bin
+      family: whisper
+  package:
+    package_version: 1.0.0
+    min_app_version: 1.0.0
+    archive_base_url: https://link.hackerapp.site/link/speech/packages

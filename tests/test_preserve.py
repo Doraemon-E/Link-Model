@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from benchmark.preserve import compute_must_preserve_rate, term_is_preserved
-from benchmark.schemas import PredictionRecord
+from translation.preserve import compute_must_preserve_rate, term_is_preserved
+from translation.schemas import PredictionRecord
 
 
 class PreserveMatcherTests(unittest.TestCase):
