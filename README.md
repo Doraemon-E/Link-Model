@@ -77,19 +77,17 @@ benchmark 结果：
 
 `translation all` 会执行：
 
-1. 迁移旧 translation 资产
-2. 下载模型
-3. 导出 ONNX
-4. 量化
-5. 跑 benchmark
-6. 生成 report
+1. 下载模型
+2. 导出 ONNX
+3. 量化
+4. 跑 benchmark
+5. 生成 report
 
 `speech all` 会执行：
 
-1. 迁移旧 speech 资产
-2. 下载语音模型
-3. 打包 zip
-4. 生成 speech catalog
+1. 下载语音模型
+2. 打包 zip
+3. 生成 speech catalog
 
 ## 当前 translation benchmark 范围
 

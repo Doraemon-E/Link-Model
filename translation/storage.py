@@ -1,21 +1,15 @@
 from __future__ import annotations
 
 import json
-import shutil
 from pathlib import Path
 
-from shared.config import ArtifactSpec, RootConfig, REPO_ROOT
-from shared.files import copy_regular_files, ensure_directory, merge_move_path
+from shared.config import ArtifactSpec, RootConfig
+from shared.files import ensure_directory
 
-from .manifests import TRANSLATION_MANIFEST_FILE_NAME, write_translation_manifest
+from .manifests import TRANSLATION_MANIFEST_FILE_NAME
 from .schemas import ArtifactManifest
 
 
-RAW_ONNX_FILE_NAMES = (
-    "encoder_model.onnx",
-    "decoder_model.onnx",
-    "decoder_with_past_model.onnx",
-)
 REQUIRED_ONNX_FILE_NAMES = (
     "encoder_model.onnx",
     "decoder_model.onnx",
@@ -34,8 +28,6 @@ WEIGHT_FILE_SUFFIXES = (
     ".safetensors",
     ".bin",
 )
-LEGACY_MODELS_DIR = REPO_ROOT / "models"
-LEGACY_BENCHMARK_TRANSLATION_DIR = LEGACY_MODELS_DIR / "benchmark_translation"
 
 
 def ensure_translation_stage_directories(config: RootConfig) -> None:
@@ -117,61 +109,3 @@ def resolve_single_gguf_payload(directory: Path) -> Path:
     if len(matches) != 1:
         raise FileNotFoundError(f"Expected exactly one GGUF payload under {directory}, found {matches or 'none'}")
     return matches[0]
-
-
-def migrate_legacy_translation_assets(config: RootConfig) -> None:
-    ensure_translation_stage_directories(config)
-    print("检查旧版 translation 资产并迁移到 models/translation/ ...")
-    for artifact in config.translation.artifacts.values():
-        _migrate_artifact(config, artifact)
-
-
-def _migrate_artifact(config: RootConfig, artifact: ArtifactSpec) -> None:
-    artifact_id = artifact.artifact_id
-
-    merge_move_path(LEGACY_MODELS_DIR / artifact_id, translation_stage_directory(config, "downloaded", artifact_id))
-    merge_move_path(LEGACY_MODELS_DIR / f"{artifact_id}-onnx", translation_stage_directory(config, "exported", artifact_id))
-    merge_move_path(LEGACY_MODELS_DIR / f"{artifact_id}-onnx-int8", translation_stage_directory(config, "quantized", artifact_id))
-    merge_move_path(LEGACY_MODELS_DIR / f"{artifact_id}-onnx-int8.zip", translation_archive_path(config, artifact))
-
-    for stage in ("downloaded", "exported", "quantized"):
-        merge_move_path(
-            LEGACY_BENCHMARK_TRANSLATION_DIR / stage / artifact_id,
-            translation_stage_directory(config, stage, artifact_id),
-        )
-
-    if artifact.family == "marian":
-        _migrate_legacy_quantized_files(config, artifact)
-        quantized_dir = translation_stage_directory(config, "quantized", artifact_id)
-        if has_required_files(quantized_dir, REQUIRED_ONNX_FILE_NAMES) and not (quantized_dir / TRANSLATION_MANIFEST_FILE_NAME).exists():
-            write_translation_manifest(artifact, quantized_dir)
-
-
-def _migrate_legacy_quantized_files(config: RootConfig, artifact: ArtifactSpec) -> None:
-    source_dir = translation_stage_directory(config, "exported", artifact.artifact_id)
-    target_dir = translation_stage_directory(config, "quantized", artifact.artifact_id)
-    ensure_directory(target_dir)
-
-    copy_regular_files(
-        source_dir,
-        target_dir,
-        exclude_suffixes={".onnx"},
-        exclude_names={TRANSLATION_MANIFEST_FILE_NAME},
-        overwrite=False,
-    )
-
-    copied = False
-    for file_name in RAW_ONNX_FILE_NAMES:
-        legacy_file = source_dir / f"{Path(file_name).stem}_int8.onnx"
-        target_file = target_dir / file_name
-        if legacy_file.exists() and not target_file.exists():
-            shutil.copy2(legacy_file, target_file)
-            copied = True
-
-    if copied and not (target_dir / TRANSLATION_MANIFEST_FILE_NAME).exists():
-        write_translation_manifest(artifact, target_dir)
-
-    for file_name in RAW_ONNX_FILE_NAMES:
-        legacy_quantized_file = source_dir / f"{Path(file_name).stem}_int8.onnx"
-        if legacy_quantized_file.exists():
-            legacy_quantized_file.unlink()

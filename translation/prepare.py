@@ -10,7 +10,6 @@ from shared.files import copy_regular_files, create_temporary_directory, directo
 from .manifests import TRANSLATION_MANIFEST_FILE_NAME, write_translation_manifest
 from .schemas import ArtifactManifest
 from .storage import (
-    RAW_ONNX_FILE_NAMES,
     artifact_manifest_path,
     ensure_translation_stage_directories,
     has_download_payload,
@@ -18,7 +17,6 @@ from .storage import (
     has_onnx_payload,
     has_quantized_payload,
     load_artifact_manifest,
-    migrate_legacy_translation_assets,
     resolve_single_gguf_payload,
     translation_stage_directory,
     write_artifact_manifest,
@@ -26,7 +24,6 @@ from .storage import (
 
 
 def prepare_translation(config: RootConfig, *, force: bool = False) -> list[ArtifactManifest]:
-    migrate_legacy_translation_assets(config)
     ensure_translation_stage_directories(config)
 
     manifests: list[ArtifactManifest] = []

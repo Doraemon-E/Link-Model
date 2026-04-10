@@ -14,13 +14,11 @@ from .schemas import HopDetail, PredictionRecord, RuntimeSummary
 from .storage import (
     artifact_manifest_path,
     has_quantized_payload,
-    migrate_legacy_translation_assets,
     translation_stage_directory,
 )
 
 
 def run_benchmark(config: RootConfig, *, timestamp: str | None = None) -> Path:
-    migrate_legacy_translation_assets(config)
     corpus_entries = load_corpus(config)
     routes = selected_routes(config)
     systems = selected_systems(config)

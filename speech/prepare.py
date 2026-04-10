@@ -5,11 +5,10 @@ import shutil
 from shared.config import RootConfig
 from shared.files import create_temporary_directory, replace_directory
 
-from .storage import ensure_speech_stage_directories, migrate_legacy_speech_assets, speech_download_dir, speech_download_root
+from .storage import ensure_speech_stage_directories, speech_download_dir, speech_download_root
 
 
 def prepare_speech(config: RootConfig, *, force: bool = False) -> list[str]:
-    migrate_legacy_speech_assets(config)
     ensure_speech_stage_directories(config)
 
     downloaded: list[str] = []

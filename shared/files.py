@@ -51,26 +51,6 @@ def copy_regular_files(
         shutil.copy2(source_path, destination_path)
 
 
-def merge_move_path(source_path: Path, target_path: Path) -> None:
-    if not source_path.exists():
-        return
-
-    if not target_path.exists():
-        ensure_directory(target_path.parent)
-        shutil.move(source_path.as_posix(), target_path.as_posix())
-        return
-
-    if source_path.is_dir() and target_path.is_dir():
-        for child in sorted(source_path.iterdir()):
-            merge_move_path(child, target_path / child.name)
-        if source_path.exists():
-            source_path.rmdir()
-        return
-
-    if source_path.is_file():
-        source_path.unlink()
-
-
 def directory_size_bytes(directory: Path) -> int:
     return sum(path.stat().st_size for path in directory.rglob("*") if path.is_file())
 

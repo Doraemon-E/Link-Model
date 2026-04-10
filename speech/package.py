@@ -5,11 +5,10 @@ import shutil
 from shared.config import RootConfig
 from shared.files import create_temporary_directory, is_archive_complete
 
-from .storage import ensure_speech_stage_directories, migrate_legacy_speech_assets, speech_archive_path, speech_download_dir, speech_package_root
+from .storage import ensure_speech_stage_directories, speech_archive_path, speech_download_dir, speech_package_root
 
 
 def package_speech_artifacts(config: RootConfig) -> list[str]:
-    migrate_legacy_speech_assets(config)
     ensure_speech_stage_directories(config)
 
     archives: list[str] = []

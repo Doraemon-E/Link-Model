@@ -6,11 +6,10 @@ from shared.config import ArtifactSpec, RootConfig
 from shared.files import create_temporary_directory, is_archive_complete
 
 from .manifests import TRANSLATION_MANIFEST_FILE_NAME, write_translation_manifest
-from .storage import ensure_translation_stage_directories, migrate_legacy_translation_assets, translation_archive_path, translation_stage_directory
+from .storage import ensure_translation_stage_directories, translation_archive_path, translation_stage_directory
 
 
 def package_translation_artifacts(config: RootConfig) -> list[str]:
-    migrate_legacy_translation_assets(config)
     ensure_translation_stage_directories(config)
 
     archives: list[str] = []
