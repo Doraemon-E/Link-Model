@@ -4,7 +4,7 @@ import time
 
 from ..paths import artifact_manifest_path, artifact_stage_directory
 from ..prepare import load_artifact_manifest
-from ..runtime import MemorySampler, TranslationRuntime, percentile
+from ..runtime import GGUFTranslationRuntime, MemorySampler, percentile
 from ..schemas import BenchmarkConfig, PredictionRecord, RouteSpec, RuntimeSummary, SystemSpec
 
 
@@ -14,14 +14,14 @@ def run_system(
     route: RouteSpec,
     corpus_entries,
 ) -> tuple[list[PredictionRecord], RuntimeSummary]:
-    artifact_id = "marian-zh-en" if route.route_id == "zh-en" else "marian-zh-ja"
-    loaded_runtime = TranslationRuntime.load(
+    artifact_id = system.artifact_ids[0]
+    loaded_runtime = GGUFTranslationRuntime.load(
         artifact_stage_directory(config.artifacts_root, "quantized", artifact_id)
     )
     runtime = loaded_runtime.runtime
     cold_start_ms = loaded_runtime.cold_start_ms
 
-    _warmup(config, runtime, corpus_entries[0].source_text)
+    _warmup(config, runtime, route, corpus_entries[0].source_text)
 
     predictions: list[PredictionRecord] = []
     latencies_ms: list[float] = []
@@ -45,8 +45,8 @@ def run_system(
             try:
                 result = runtime.translate(
                     entry.source_text,
-                    source_lang=None,
-                    target_lang=None,
+                    source_lang=route.source_lang,
+                    target_lang=route.target_lang,
                     batch_size=config.decode.batch_size,
                     do_sample=config.decode.do_sample,
                     num_beams=config.decode.num_beams,
@@ -109,12 +109,37 @@ def run_system(
     return predictions, summary
 
 
-def _warmup(config: BenchmarkConfig, runtime: TranslationRuntime, text: str) -> None:
+def smoke_test_system(
+    config: BenchmarkConfig,
+    system: SystemSpec,
+    routes: list[RouteSpec],
+    corpus_entry,
+) -> None:
+    artifact_id = system.artifact_ids[0]
+    loaded_runtime = GGUFTranslationRuntime.load(
+        artifact_stage_directory(config.artifacts_root, "quantized", artifact_id)
+    )
+    runtime = loaded_runtime.runtime
+    for route in routes:
+        result = runtime.translate(
+            corpus_entry.source_text,
+            source_lang=route.source_lang,
+            target_lang=route.target_lang,
+            batch_size=config.decode.batch_size,
+            do_sample=False,
+            num_beams=1,
+            max_new_tokens=min(config.decode.max_new_tokens, 64),
+        )
+        if not result.text.strip():
+            raise RuntimeError(f"empty smoke output for route={route.route_id}")
+
+
+def _warmup(config: BenchmarkConfig, runtime: GGUFTranslationRuntime, route: RouteSpec, text: str) -> None:
     for _ in range(config.decode.warmup_iterations):
         runtime.translate(
             text,
-            source_lang=None,
-            target_lang=None,
+            source_lang=route.source_lang,
+            target_lang=route.target_lang,
             batch_size=config.decode.batch_size,
             do_sample=config.decode.do_sample,
             num_beams=config.decode.num_beams,

@@ -21,9 +21,11 @@ if __package__ in {None, ""}:
         ensure_directory,
         new_result_directory,
     )
-    from benchmark.prepare import has_onnx_payload, load_artifact_manifest, prepare_benchmark
+    from benchmark.prepare import has_quantized_payload, load_artifact_manifest, prepare_benchmark
     from benchmark.registry import (
+        artifact_for_id,
         load_executor,
+        load_smoke_test,
         selected_routes,
         selected_systems,
         validate_config_selection,
@@ -39,8 +41,15 @@ else:
         ensure_directory,
         new_result_directory,
     )
-    from .prepare import has_onnx_payload, load_artifact_manifest, prepare_benchmark
-    from .registry import load_executor, selected_routes, selected_systems, validate_config_selection
+    from .prepare import has_quantized_payload, load_artifact_manifest, prepare_benchmark
+    from .registry import (
+        artifact_for_id,
+        load_executor,
+        load_smoke_test,
+        selected_routes,
+        selected_systems,
+        validate_config_selection,
+    )
     from .report import generate_report, resolve_result_dir
 
 
@@ -89,19 +98,30 @@ def run_benchmark(config_path: Path | None = None, *, timestamp: str | None = No
     validate_config_selection(config)
 
     corpus_entries = load_corpus()
+    routes = selected_routes(config)
     result_dir = new_result_directory(config.results_root, timestamp=timestamp)
     ensure_directory(result_dir)
 
     predictions = []
     runtime_summaries = []
+    smoke_entry = _select_smoke_entry(corpus_entries)
 
     for system in selected_systems(config):
         readiness = _system_readiness(config, system)
         if readiness is not None:
             print(f"[run] skip system={system.system_id}: {readiness}")
             continue
+
+        smoke_test = load_smoke_test(system)
+        if smoke_test is not None:
+            print(f"[run] smoke system={system.system_id} entry={smoke_entry.entry_id}")
+            try:
+                smoke_test(config, system, routes, smoke_entry)
+            except Exception as exc:
+                raise RuntimeError(f"smoke test failed for system={system.system_id}: {exc}") from exc
+
         executor = load_executor(system)
-        for route in selected_routes(config):
+        for route in routes:
             print(f"[run] system={system.system_id} route={route.route_id}")
             system_predictions, runtime_summary = executor(config, system, route, corpus_entries)
             predictions.extend(system_predictions)
@@ -127,6 +147,7 @@ def run_benchmark(config_path: Path | None = None, *, timestamp: str | None = No
 
 def _system_readiness(config, system) -> str | None:
     for artifact_id in system.artifact_ids:
+        artifact = artifact_for_id(artifact_id)
         manifest_path = artifact_manifest_path(config.artifacts_root, artifact_id)
         if not manifest_path.exists():
             return f"missing artifact manifest for {artifact_id}; run prepare first"
@@ -135,11 +156,21 @@ def _system_readiness(config, system) -> str | None:
         if not manifest.quantize_success:
             return f"artifact {artifact_id} is not ready ({manifest.error_message or 'prepare failed'})"
 
+        export_dir = artifact_stage_directory(config.artifacts_root, "exported", artifact_id)
         quantized_dir = artifact_stage_directory(config.artifacts_root, "quantized", artifact_id)
-        if not has_onnx_payload(quantized_dir):
+        if not has_quantized_payload(artifact, export_dir, quantized_dir):
             return f"artifact {artifact_id} is incomplete under {quantized_dir}; rerun prepare"
 
     return None
+
+
+def _select_smoke_entry(corpus_entries):
+    for entry in corpus_entries:
+        if entry.bucket == "short":
+            return entry
+    if not corpus_entries:
+        raise ValueError("Corpus is empty.")
+    return corpus_entries[0]
 
 
 if __name__ == "__main__":

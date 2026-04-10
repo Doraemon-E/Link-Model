@@ -1,0 +1,7 @@
+board_type,lane,route,rank,system_id,comet,p50_ms,peak_rss_mb,quantized_size,recommended,eliminated
+quality,llm,zh-en,1,hy-mt1.5-1.8b-gguf-q4km,nan,1308.476625,2380.781250,1133080512,false,true
+efficiency,llm,zh-en,1,hy-mt1.5-1.8b-gguf-q4km,nan,1308.476625,2380.781250,1133080512,false,true
+pareto_frontier,llm,zh-en,1,hy-mt1.5-1.8b-gguf-q4km,nan,1308.476625,2380.781250,1133080512,false,true
+quality,llm,zh-ja,1,hy-mt1.5-1.8b-gguf-q4km,nan,1692.091209,2360.921875,1133080512,false,true
+efficiency,llm,zh-ja,1,hy-mt1.5-1.8b-gguf-q4km,nan,1692.091209,2360.921875,1133080512,false,true
+pareto_frontier,llm,zh-ja,1,hy-mt1.5-1.8b-gguf-q4km,nan,1692.091209,2360.921875,1133080512,false,true

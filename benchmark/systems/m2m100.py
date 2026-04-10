@@ -95,7 +95,7 @@ def run_system(
         artifact_ids=["m2m100-418m"],
         model_ids=[manifest.model_id],
         licenses=[manifest.license],
-        int8_size=manifest.int8_size,
+        quantized_size=manifest.quantized_size,
         cold_start_ms=cold_start_ms,
         p50_ms=percentile(latencies_ms, 0.5),
         p95_ms=percentile(latencies_ms, 0.95),

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
+from .preserve import compute_must_preserve_rate
 from .schemas import EvaluationRecord, MetricsConfig, PredictionRecord, RuntimeSummary
 
 
@@ -28,7 +29,7 @@ def compute_evaluations(
 
         bleu_score = _compute_bleu(hypotheses, references) if metrics_config.compute_bleu else 0.0
         chrf_pp_score = _compute_chrf_pp(hypotheses, references) if metrics_config.compute_chrf_pp else 0.0
-        must_preserve_rate = _compute_must_preserve_rate(records)
+        must_preserve_rate = compute_must_preserve_rate(records)
         comet_score = comet_scores_by_key.get(key) if comet_available else None
 
         evaluations.append(
@@ -39,7 +40,7 @@ def compute_evaluations(
                 artifact_ids=summary.artifact_ids,
                 model_ids=summary.model_ids,
                 licenses=summary.licenses,
-                int8_size=summary.int8_size,
+                quantized_size=summary.quantized_size,
                 cold_start_ms=summary.cold_start_ms,
                 p50_ms=summary.p50_ms,
                 p95_ms=summary.p95_ms,
@@ -124,17 +125,3 @@ def _compute_chrf_pp(hypotheses: list[str], references: list[str]) -> float:
     from sacrebleu import corpus_chrf
 
     return float(corpus_chrf(hypotheses, [references], word_order=2).score)
-
-
-def _compute_must_preserve_rate(records: list[PredictionRecord]) -> float:
-    total_terms = 0
-    matched_terms = 0
-
-    for record in records:
-        normalized_prediction = record.translated_text.casefold()
-        for term in record.must_preserve:
-            total_terms += 1
-            if term.casefold() in normalized_prediction:
-                matched_terms += 1
-
-    return (matched_terms / total_terms) if total_terms else 0.0

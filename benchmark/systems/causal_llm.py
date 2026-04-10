@@ -96,7 +96,7 @@ def run_system(
         artifact_ids=[artifact_id],
         model_ids=[manifest.model_id],
         licenses=[manifest.license],
-        int8_size=manifest.int8_size,
+        quantized_size=manifest.quantized_size,
         cold_start_ms=cold_start_ms,
         p50_ms=percentile(latencies_ms, 0.5),
         p95_ms=percentile(latencies_ms, 0.95),
@@ -107,6 +107,31 @@ def run_system(
         error_count=error_count,
     )
     return predictions, summary
+
+
+def smoke_test_system(
+    config: BenchmarkConfig,
+    system: SystemSpec,
+    routes: list[RouteSpec],
+    corpus_entry,
+) -> None:
+    artifact_id = system.artifact_ids[0]
+    loaded_runtime = CausalTranslationRuntime.load(
+        artifact_stage_directory(config.artifacts_root, "quantized", artifact_id)
+    )
+    runtime = loaded_runtime.runtime
+    for route in routes:
+        result = runtime.translate(
+            corpus_entry.source_text,
+            source_lang=route.source_lang,
+            target_lang=route.target_lang,
+            batch_size=config.decode.batch_size,
+            do_sample=False,
+            num_beams=1,
+            max_new_tokens=min(config.decode.max_new_tokens, 64),
+        )
+        if not result.text.strip():
+            raise RuntimeError(f"empty smoke output for route={route.route_id}")
 
 
 def _warmup(config: BenchmarkConfig, runtime: CausalTranslationRuntime, route: RouteSpec, text: str) -> None:

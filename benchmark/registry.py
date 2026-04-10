@@ -55,6 +55,17 @@ ARTIFACTS: dict[str, ArtifactSpec] = {
         source_langs=("zh",),
         target_langs=("en", "ja"),
     ),
+    "hy-mt1.5-1.8b-gguf-q4km": ArtifactSpec(
+        artifact_id="hy-mt1.5-1.8b-gguf-q4km",
+        model_id="tencent/HY-MT1.5-1.8B-GGUF",
+        family="gguf_causal_llm",
+        source_langs=("zh",),
+        target_langs=("en", "ja"),
+        artifact_format="gguf",
+        runtime_backend="llama_cpp",
+        quantization_format="gguf_q4_k_m",
+        quantization_source="vendor_prequantized",
+    ),
 }
 
 
@@ -112,6 +123,12 @@ SYSTEMS: dict[str, SystemSpec] = {
         artifact_ids=("phi-4-mini-instruct",),
         executor_module="benchmark.systems.causal_llm",
     ),
+    "hy-mt1.5-1.8b-gguf-q4km": SystemSpec(
+        system_id="hy-mt1.5-1.8b-gguf-q4km",
+        lane="llm",
+        artifact_ids=("hy-mt1.5-1.8b-gguf-q4km",),
+        executor_module="benchmark.systems.gguf_causal_llm",
+    ),
 }
 
 
@@ -161,8 +178,20 @@ def baseline_system_id() -> str:
     raise RuntimeError("No baseline system registered.")
 
 
+def load_system_module(system: SystemSpec):
+    return importlib.import_module(system.executor_module)
+
+
 def load_executor(system: SystemSpec):
-    module = importlib.import_module(system.executor_module)
+    module = load_system_module(system)
     if not hasattr(module, "run_system"):
         raise AttributeError(f"{system.executor_module} does not expose run_system().")
     return module.run_system
+
+
+def load_smoke_test(system: SystemSpec):
+    module = load_system_module(system)
+    smoke_test = getattr(module, "smoke_test_system", None)
+    if smoke_test is None:
+        return None
+    return smoke_test

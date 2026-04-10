@@ -1,0 +1,48 @@
+[
+  {
+    "system_id": "hy-mt1.5-1.8b-gguf-q4km",
+    "lane": "llm",
+    "route": "zh-en",
+    "artifact_ids": [
+      "hy-mt1.5-1.8b-gguf-q4km"
+    ],
+    "model_ids": [
+      "tencent/HY-MT1.5-1.8B-GGUF"
+    ],
+    "licenses": [
+      "unknown"
+    ],
+    "quantized_size": 1133080512,
+    "cold_start_ms": 1213.9467499800958,
+    "p50_ms": 1308.4766250103712,
+    "p95_ms": 5684.997029410442,
+    "total_duration_s": 172.18553050002083,
+    "tokens_per_second": 32.145776078818905,
+    "peak_rss_mb": 2380.78125,
+    "empty_output_count": 0,
+    "error_count": 0
+  },
+  {
+    "system_id": "hy-mt1.5-1.8b-gguf-q4km",
+    "lane": "llm",
+    "route": "zh-ja",
+    "artifact_ids": [
+      "hy-mt1.5-1.8b-gguf-q4km"
+    ],
+    "model_ids": [
+      "tencent/HY-MT1.5-1.8B-GGUF"
+    ],
+    "licenses": [
+      "unknown"
+    ],
+    "quantized_size": 1133080512,
+    "cold_start_ms": 1176.229917036835,
+    "p50_ms": 1692.0912089990452,
+    "p95_ms": 7453.0118410941195,
+    "total_duration_s": 223.9560583329876,
+    "tokens_per_second": 32.685095710564816,
+    "peak_rss_mb": 2360.921875,
+    "empty_output_count": 0,
+    "error_count": 0
+  }
+]

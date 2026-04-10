@@ -12,6 +12,10 @@ class ArtifactSpec:
     family: str
     source_langs: tuple[str, ...]
     target_langs: tuple[str, ...]
+    artifact_format: str = "onnx"
+    runtime_backend: str = "onnxruntime"
+    quantization_format: str = "onnx_qint8"
+    quantization_source: str = "local_prepare"
 
 
 @dataclass(frozen=True)
@@ -108,15 +112,36 @@ class ArtifactManifest:
     license: str
     source_langs: list[str]
     target_langs: list[str]
-    fp32_size: int
-    int8_size: int
-    quantization_ratio: float
+    fp32_size: int | None
+    quantized_size: int
+    quantization_ratio: float | None
     export_success: bool
     quantize_success: bool
+    quantization_format: str = "onnx_qint8"
+    quantization_source: str = "local_prepare"
+    source_file_name: str | None = None
+    source_file_sha256: str | None = None
     error_message: str | None = None
 
     def to_json_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+    @classmethod
+    def from_json_dict(cls, payload: dict[str, Any]) -> "ArtifactManifest":
+        normalized = dict(payload)
+        if "quantized_size" not in normalized and "int8_size" in normalized:
+            normalized["quantized_size"] = normalized.pop("int8_size")
+        normalized.setdefault("fp32_size", None)
+        normalized.setdefault("quantization_ratio", None)
+        normalized.setdefault("quantization_format", "onnx_qint8")
+        normalized.setdefault("quantization_source", "local_prepare")
+        normalized.setdefault("source_file_name", None)
+        normalized.setdefault("source_file_sha256", None)
+        return cls(**normalized)
+
+    @property
+    def int8_size(self) -> int:
+        return self.quantized_size
 
 
 @dataclass(frozen=True)
@@ -165,7 +190,7 @@ class RuntimeSummary:
     artifact_ids: list[str]
     model_ids: list[str]
     licenses: list[str]
-    int8_size: int
+    quantized_size: int
     cold_start_ms: float
     p50_ms: float
     p95_ms: float
@@ -178,6 +203,17 @@ class RuntimeSummary:
     def to_json_dict(self) -> dict[str, Any]:
         return asdict(self)
 
+    @classmethod
+    def from_json_dict(cls, payload: dict[str, Any]) -> "RuntimeSummary":
+        normalized = dict(payload)
+        if "quantized_size" not in normalized and "int8_size" in normalized:
+            normalized["quantized_size"] = normalized.pop("int8_size")
+        return cls(**normalized)
+
+    @property
+    def int8_size(self) -> int:
+        return self.quantized_size
+
 
 @dataclass(frozen=True)
 class EvaluationRecord:
@@ -187,7 +223,7 @@ class EvaluationRecord:
     artifact_ids: list[str]
     model_ids: list[str]
     licenses: list[str]
-    int8_size: int
+    quantized_size: int
     cold_start_ms: float
     p50_ms: float
     p95_ms: float
@@ -207,6 +243,10 @@ class EvaluationRecord:
     def to_json_dict(self) -> dict[str, Any]:
         return asdict(self)
 
+    @property
+    def int8_size(self) -> int:
+        return self.quantized_size
+
 
 @dataclass(frozen=True)
 class LeaderboardRow:
@@ -218,6 +258,10 @@ class LeaderboardRow:
     comet: float
     p50_ms: float
     peak_rss_mb: float
-    int8_size: int
+    quantized_size: int
     recommended: bool
     eliminated: bool
+
+    @property
+    def int8_size(self) -> int:
+        return self.quantized_size

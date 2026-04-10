@@ -1,0 +1,26 @@
+artifacts_root: models/benchmark_translation
+results_root: benchmark/results/translation
+systems:
+  - hy-mt1.5-1.8b-gguf-q4km
+routes:
+  - zh-en
+  - zh-ja
+quantization:
+  weight_type: gguf_q4_k_m
+decode:
+  batch_size: 1
+  do_sample: false
+  num_beams: 1
+  greedy_decode: true
+  max_new_tokens: 256
+  warmup_iterations: 2
+  benchmark_iterations: 5
+metrics:
+  comet_model: wmt22-comet-da
+  comet_batch_size: 8
+  compute_bleu: true
+  compute_chrf_pp: true
+decision_policy:
+  must_preserve_threshold: 0.85
+  comet_delta_threshold: 0.03
+  latency_tie_threshold: 0.10

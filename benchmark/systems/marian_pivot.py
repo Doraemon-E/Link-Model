@@ -151,7 +151,7 @@ def run_system(
         artifact_ids=artifact_ids,
         model_ids=[manifest.model_id for manifest in manifests],
         licenses=[manifest.license for manifest in manifests],
-        int8_size=sum(manifest.int8_size for manifest in manifests),
+        quantized_size=sum(manifest.quantized_size for manifest in manifests),
         cold_start_ms=cold_start_ms,
         p50_ms=percentile(latencies_ms, 0.5),
         p95_ms=percentile(latencies_ms, 0.95),

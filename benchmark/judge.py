@@ -90,7 +90,7 @@ def build_leaderboards(evaluations: list[EvaluationRecord]) -> list[LeaderboardR
         )
         efficiency_sorted = sorted(
             route_evaluations,
-            key=lambda item: (item.p50_ms, item.peak_rss_mb, item.int8_size),
+            key=lambda item: (item.p50_ms, item.peak_rss_mb, item.quantized_size),
         )
         frontier = _pareto_frontier(route_evaluations)
 
@@ -109,7 +109,7 @@ def _choose_recommended(
     if not eligible:
         return None
 
-    ordered = sorted(eligible, key=lambda item: (item.p50_ms, item.peak_rss_mb, item.int8_size))
+    ordered = sorted(eligible, key=lambda item: (item.p50_ms, item.peak_rss_mb, item.quantized_size))
     if len(ordered) == 1:
         return ordered[0].system_id
 
@@ -118,7 +118,7 @@ def _choose_recommended(
     if second.p50_ms <= (first.p50_ms * (1.0 + decision_policy.latency_tie_threshold)):
         if second.peak_rss_mb < first.peak_rss_mb:
             return second.system_id
-        if second.peak_rss_mb == first.peak_rss_mb and second.int8_size < first.int8_size:
+        if second.peak_rss_mb == first.peak_rss_mb and second.quantized_size < first.quantized_size:
             return second.system_id
 
     return first.system_id
@@ -137,13 +137,13 @@ def _pareto_frontier(evaluations: list[EvaluationRecord]) -> list[EvaluationReco
                 other_comet >= candidate_comet
                 and other.p50_ms <= candidate.p50_ms
                 and other.peak_rss_mb <= candidate.peak_rss_mb
-                and other.int8_size <= candidate.int8_size
+                and other.quantized_size <= candidate.quantized_size
             )
             strictly_better = (
                 other_comet > candidate_comet
                 or other.p50_ms < candidate.p50_ms
                 or other.peak_rss_mb < candidate.peak_rss_mb
-                or other.int8_size < candidate.int8_size
+                or other.quantized_size < candidate.quantized_size
             )
             if better_or_equal and strictly_better:
                 dominated = True
@@ -177,7 +177,7 @@ def _to_leaderboard_rows(
             comet=evaluation.comet if evaluation.comet is not None else float("nan"),
             p50_ms=evaluation.p50_ms,
             peak_rss_mb=evaluation.peak_rss_mb,
-            int8_size=evaluation.int8_size,
+            quantized_size=evaluation.quantized_size,
             recommended=evaluation.recommended,
             eliminated=evaluation.eliminated,
         )

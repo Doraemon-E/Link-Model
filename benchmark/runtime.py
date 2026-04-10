@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import threading
 import time
 from dataclasses import dataclass
@@ -186,6 +187,65 @@ class CausalTranslationRuntime:
         )
 
 
+class GGUFTranslationRuntime:
+    def __init__(self, model_dir: Path) -> None:
+        from llama_cpp import Llama
+
+        self.model_dir = model_dir
+        self.model_path = resolve_single_gguf_model(model_dir)
+        self.model = Llama(
+            model_path=self.model_path.as_posix(),
+            n_ctx=4096,
+            n_gpu_layers=0,
+            n_threads=max(os.cpu_count() or 1, 1),
+            verbose=False,
+            seed=0,
+        )
+
+    @classmethod
+    def load(cls, model_dir: Path) -> LoadedRuntime:
+        start = time.perf_counter()
+        runtime = cls(model_dir)
+        cold_start_ms = (time.perf_counter() - start) * 1000
+        return LoadedRuntime(runtime=runtime, cold_start_ms=cold_start_ms)
+
+    def translate(
+        self,
+        text: str,
+        *,
+        source_lang: str,
+        target_lang: str,
+        batch_size: int,
+        do_sample: bool,
+        num_beams: int,
+        max_new_tokens: int,
+    ) -> TranslationResult:
+        if batch_size != 1:
+            raise ValueError("Only batch_size=1 is supported in benchmark v1.")
+        if num_beams != 1:
+            raise ValueError("GGUF runtime only supports num_beams=1 in benchmark v1.")
+
+        prompt = build_translation_prompt(text, source_lang=source_lang, target_lang=target_lang)
+        response = self.model.create_completion(
+            prompt=prompt,
+            max_tokens=max_new_tokens,
+            temperature=0.7 if do_sample else 0.0,
+            top_p=1.0,
+            top_k=1,
+            echo=False,
+        )
+        translated_text = str(response["choices"][0]["text"]).strip()
+        usage = response.get("usage", {})
+        output_token_count = int(usage.get("completion_tokens") or 0)
+        if output_token_count <= 0:
+            output_token_count = len(self.model.tokenize(translated_text.encode("utf-8"), add_bos=False))
+
+        return TranslationResult(
+            text=translated_text,
+            output_token_count=output_token_count,
+        )
+
+
 def build_translation_prompt(text: str, *, source_lang: str, target_lang: str) -> str:
     source_name = {
         "zh": "Chinese",
@@ -202,6 +262,13 @@ def build_translation_prompt(text: str, *, source_lang: str, target_lang: str) -
         "Return only the translation, with no explanation.\n\n"
         f"{text}"
     )
+
+
+def resolve_single_gguf_model(model_dir: Path) -> Path:
+    matches = sorted(path for path in model_dir.rglob("*.gguf") if path.is_file())
+    if len(matches) != 1:
+        raise FileNotFoundError(f"Expected exactly one GGUF model under {model_dir}, found {matches or 'none'}")
+    return matches[0]
 
 
 def percentile(values: list[float], percentile_value: float) -> float:

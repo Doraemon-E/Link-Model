@@ -71,7 +71,7 @@ def _load_predictions(predictions_path: Path) -> list[PredictionRecord]:
 
 def _load_runtime_summaries(runtime_summary_path: Path) -> list[RuntimeSummary]:
     payload = json.loads(runtime_summary_path.read_text(encoding="utf-8"))
-    return [RuntimeSummary(**item) for item in payload]
+    return [RuntimeSummary.from_json_dict(item) for item in payload]
 
 
 def _write_leaderboard_csv(output_path: Path, rows: list[LeaderboardRow]) -> None:
@@ -87,7 +87,7 @@ def _write_leaderboard_csv(output_path: Path, rows: list[LeaderboardRow]) -> Non
                 "comet",
                 "p50_ms",
                 "peak_rss_mb",
-                "int8_size",
+                "quantized_size",
                 "recommended",
                 "eliminated",
             ]
@@ -103,7 +103,7 @@ def _write_leaderboard_csv(output_path: Path, rows: list[LeaderboardRow]) -> Non
                     f"{row.comet:.6f}",
                     f"{row.p50_ms:.6f}",
                     f"{row.peak_rss_mb:.6f}",
-                    row.int8_size,
+                    row.quantized_size,
                     str(row.recommended).lower(),
                     str(row.eliminated).lower(),
                 ]
@@ -135,7 +135,9 @@ def _write_report_markdown(
     lines.append("")
     lines.append("## 量化产物")
     for evaluation in evaluations:
-        lines.append(f"- `{evaluation.lane}` / `{evaluation.route}` / `{evaluation.system_id}`: int8_size={evaluation.int8_size} bytes")
+        lines.append(
+            f"- `{evaluation.lane}` / `{evaluation.route}` / `{evaluation.system_id}`: quantized_size={evaluation.quantized_size} bytes"
+        )
 
     lines.append("")
     lines.append("## 质量排行")
@@ -152,7 +154,7 @@ def _write_report_markdown(
         lines.append(f"### {lane} / {route}")
         for row in [item for item in leaderboard_rows if item.board_type == "efficiency" and item.route == route and item.lane == lane]:
             lines.append(
-                f"- #{row.rank} `{row.system_id}` p50_ms={row.p50_ms:.2f}, peak_rss_mb={row.peak_rss_mb:.2f}, int8_size={row.int8_size}"
+                f"- #{row.rank} `{row.system_id}` p50_ms={row.p50_ms:.2f}, peak_rss_mb={row.peak_rss_mb:.2f}, quantized_size={row.quantized_size}"
             )
 
     lines.append("")
