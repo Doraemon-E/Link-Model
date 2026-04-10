@@ -25,8 +25,8 @@ class UnifiedPipelineTests(unittest.TestCase):
             set(config.translation.systems["opus-mt-pivot-via-en"].route_plans.keys()),
             {"zh-ja"},
         )
-        self.assertTrue(config.translation.artifacts["opus-mt-zh-en"].package_enabled)
-        self.assertFalse(config.translation.artifacts["hy-mt1.5-1.8b-gguf-q4km"].package_enabled)
+        self.assertFalse(config.translation.artifacts["opus-mt-zh-en"].package_enabled)
+        self.assertTrue(config.translation.artifacts["hy-mt1.5-1.8b-gguf-q4km"].package_enabled)
 
     def test_root_cli_exposes_translation_and_speech_groups(self) -> None:
         parser = build_parser()

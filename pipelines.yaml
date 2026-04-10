@@ -13,7 +13,7 @@ translation:
       family: marian
       source_langs: [zh]
       target_langs: [en]
-      package_enabled: true
+      package_enabled: false
       package_source: zho
       package_target: eng
     opus-mt-en-ja:
@@ -21,7 +21,7 @@ translation:
       family: marian
       source_langs: [en]
       target_langs: [ja]
-      package_enabled: true
+      package_enabled: false
       package_source: eng
       package_target: jpn
     opus-mt-zh-ja:
@@ -29,7 +29,7 @@ translation:
       family: marian
       source_langs: [zh]
       target_langs: [ja]
-      package_enabled: true
+      package_enabled: false
       package_source: zho
       package_target: jpn
     hy-mt1.5-1.8b-gguf-q4km:
@@ -41,7 +41,7 @@ translation:
       runtime_backend: llama_cpp
       quantization_format: gguf_q4_k_m
       quantization_source: vendor_prequantized
-      package_enabled: false
+      package_enabled: true
   systems:
     opus-mt-direct:
       display_name: Opus MT Direct

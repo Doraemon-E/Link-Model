@@ -7,12 +7,28 @@ from shared.config import ArtifactSpec
 
 
 TRANSLATION_MANIFEST_FILE_NAME = "translation-manifest.json"
+GGUF_SUPPORTED_LANGUAGE_CODES = (
+    "zho",
+    "eng",
+    "jpn",
+    "kor",
+    "fra",
+    "deu",
+    "rus",
+    "spa",
+    "ita",
+)
 
 
 def build_translation_manifest(artifact: ArtifactSpec, model_dir: Path) -> dict[str, object]:
-    if artifact.family != "marian":
-        raise ValueError(f"Unsupported translation family for packaging: {artifact.family}")
+    if artifact.family == "marian":
+        return _build_marian_manifest(artifact, model_dir)
+    if artifact.family == "gguf_causal_llm":
+        return _build_gguf_manifest(artifact, model_dir)
+    raise ValueError(f"Unsupported translation family for packaging: {artifact.family}")
 
+
+def _build_marian_manifest(artifact: ArtifactSpec, model_dir: Path) -> dict[str, object]:
     config = _load_json(model_dir / "config.json")
     generation_config = _load_json(model_dir / "generation_config.json")
     tokenizer_config = _load_json(model_dir / "tokenizer_config.json")
@@ -74,6 +90,32 @@ def build_translation_manifest(artifact: ArtifactSpec, model_dir: Path) -> dict[
                 "target": artifact.package_target or artifact.target_langs[0],
             }
         ],
+    }
+
+
+def _build_gguf_manifest(artifact: ArtifactSpec, model_dir: Path) -> dict[str, object]:
+    model_path = model_dir / "model.gguf"
+    if not model_path.exists():
+        raise FileNotFoundError(f"Missing GGUF model payload: {model_path}")
+
+    return {
+        "family": artifact.family,
+        "promptStyle": "hy_mt_translation_v1",
+        "supportedLanguages": list(GGUF_SUPPORTED_LANGUAGE_CODES),
+        "gguf": {
+            "modelFile": "model.gguf",
+        },
+        "runtime": {
+            "contextLength": 4096,
+        },
+        "generation": {
+            "maxInputLength": 3072,
+            "maxOutputLength": 512,
+            "temperature": 0.7,
+            "topK": 20,
+            "topP": 0.6,
+            "repetitionPenalty": 1.05,
+        },
     }
 
 

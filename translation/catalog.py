@@ -32,9 +32,8 @@ def generate_translation_catalog(
             {
                 "packageId": artifact.package_id,
                 "version": resolved_package_version,
-                "source": artifact.package_source or artifact.source_langs[0],
-                "target": artifact.package_target or artifact.target_langs[0],
                 "family": artifact.family,
+                "supportedLanguages": _supported_languages_for_artifact(artifact),
                 "archiveURL": f"{package_cfg.archive_base_url}/{archive_path.name}",
                 "sha256": sha256_for_file(archive_path),
                 "archiveSize": archive_path.stat().st_size,
@@ -45,3 +44,14 @@ def generate_translation_catalog(
         )
 
     return write_catalog_payload(resolved_output, packages=packages, requested_version=requested_version)
+
+
+def _supported_languages_for_artifact(artifact: ArtifactSpec) -> list[str]:
+    if artifact.family == "gguf_causal_llm":
+        return ["zho", "eng", "jpn", "kor", "fra", "deu", "rus", "spa", "ita"]
+
+    supported_codes = [
+        artifact.package_source or artifact.source_langs[0],
+        artifact.package_target or artifact.target_langs[0],
+    ]
+    return list(dict.fromkeys(supported_codes))

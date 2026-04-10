@@ -148,11 +148,15 @@ class GGUFTranslationRuntime:
             prompt=prompt,
             max_tokens=max_new_tokens,
             temperature=0.7 if do_sample else 0.0,
-            top_p=1.0,
-            top_k=1,
+            top_p=0.6,
+            top_k=20,
+            repeat_penalty=1.05,
             echo=False,
         )
-        translated_text = str(response["choices"][0]["text"]).strip()
+        translated_text = sanitize_translation_output(
+            str(response["choices"][0]["text"]),
+            source_text=text,
+        )
         usage = response.get("usage", {})
         output_token_count = int(usage.get("completion_tokens") or 0)
         if output_token_count <= 0:
@@ -161,13 +165,113 @@ class GGUFTranslationRuntime:
 
 
 def build_translation_prompt(text: str, *, source_lang: str, target_lang: str) -> str:
-    source_name = {"zh": "Chinese", "en": "English", "ja": "Japanese"}.get(source_lang, source_lang)
-    target_name = {"zh": "Chinese", "en": "English", "ja": "Japanese"}.get(target_lang, target_lang)
-    return (
-        f"Translate the following {source_name} text into {target_name}. "
-        "Return only the translation, with no explanation.\n\n"
-        f"{text}"
-    )
+    normalized_source = source_lang.strip().lower()
+    normalized_target = target_lang.strip().lower()
+    language_names = {
+        "zh": "Chinese",
+        "en": "English",
+        "ja": "Japanese",
+        "ko": "Korean",
+        "fr": "French",
+        "de": "German",
+        "ru": "Russian",
+        "es": "Spanish",
+        "it": "Italian",
+    }
+
+    if normalized_source == "zh" or normalized_target == "zh":
+        target_name_cn = {
+            "zh": "中文",
+            "en": "英语",
+            "ja": "日语",
+            "ko": "韩语",
+            "fr": "法语",
+            "de": "德语",
+            "ru": "俄语",
+            "es": "西班牙语",
+            "it": "意大利语",
+        }.get(normalized_target, normalized_target)
+        source_name_cn = {
+            "zh": "中文",
+            "en": "英语",
+            "ja": "日语",
+            "ko": "韩语",
+            "fr": "法语",
+            "de": "德语",
+            "ru": "俄语",
+            "es": "西班牙语",
+            "it": "意大利语",
+        }.get(normalized_source, normalized_source)
+        return f"""你是一个翻译引擎。
+任务：把给定文本从{source_name_cn}翻译成{target_name_cn}。
+
+规则：
+- 只做翻译，不要解释。
+- 只在 <translation> 和 </translation> 标签内输出译文。
+- 不要输出原文，不要添加引号、编号或备注。
+- 保留原文语气与换行。
+- 输出完成后立刻写 </translation>。
+
+<source_text>
+{text}
+</source_text>
+<translation>
+"""
+
+    source_name = language_names.get(normalized_source, source_lang)
+    target_name = language_names.get(normalized_target, target_lang)
+    return f"""You are a translation engine.
+Translate the source text from {source_name} to {target_name}.
+
+Rules:
+- Return the translation only.
+- Output only inside <translation> and </translation>.
+- Do not explain, annotate, quote, or repeat the source text.
+- Preserve tone and line breaks where possible.
+- Finish by writing </translation>.
+
+<source_text>
+{text}
+</source_text>
+<translation>
+"""
+
+
+def sanitize_translation_output(output: str, *, source_text: str) -> str:
+    normalized = output.replace("\r\n", "\n").strip()
+
+    if "<translation>" in normalized:
+        normalized = normalized.split("<translation>", 1)[1].strip()
+
+    cut_positions = [
+        normalized.find(marker)
+        for marker in (
+            "</translation>",
+            "<source_text>",
+            "Source text:",
+            "Rules:",
+            "规则：",
+            "任务：",
+        )
+        if marker in normalized
+    ]
+    if cut_positions:
+        normalized = normalized[: min(cut_positions)].strip()
+
+    for prefix in ("Translation:", "translation:", "译文：", "译文:", "答案：", "答案:"):
+        if normalized.startswith(prefix):
+            normalized = normalized[len(prefix) :].strip()
+            break
+
+    if len(source_text.strip()) <= 12:
+        lines = [line.strip() for line in normalized.splitlines() if line.strip()]
+        if lines:
+            normalized = lines[0]
+
+    if normalized.startswith('"') and normalized.endswith('"') and len(normalized) >= 2:
+        normalized = normalized[1:-1].strip()
+
+    return normalized
 
 
 def resolve_single_gguf_model(model_dir: Path) -> Path:

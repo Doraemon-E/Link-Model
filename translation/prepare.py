@@ -76,6 +76,8 @@ def _prepare_artifact(config: RootConfig, artifact: ArtifactSpec, *, force: bool
             if not has_gguf_payload(quantized_dir):
                 print(f"[translation prepare] staging official GGUF {artifact.artifact_id}")
                 source_file_name, source_file_sha256 = stage_vendor_gguf_model(download_dir, quantized_dir)
+            if not (quantized_dir / TRANSLATION_MANIFEST_FILE_NAME).exists():
+                write_translation_manifest(artifact, quantized_dir)
         else:
             if not has_onnx_payload(export_dir):
                 print(f"[translation prepare] exporting ONNX {artifact.artifact_id}")
@@ -88,7 +90,7 @@ def _prepare_artifact(config: RootConfig, artifact: ArtifactSpec, *, force: bool
                     quantized_dir,
                     weight_type=config.translation.benchmark.quantization.weight_type,
                 )
-                if artifact.family == "marian":
+                if not (quantized_dir / TRANSLATION_MANIFEST_FILE_NAME).exists():
                     write_translation_manifest(artifact, quantized_dir)
     except Exception as exc:
         prepare_error = exc

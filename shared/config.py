@@ -38,10 +38,14 @@ class ArtifactSpec:
 
     @property
     def package_id(self) -> str:
+        if self.family == "gguf_causal_llm" or self.artifact_format == "gguf":
+            return self.artifact_id
         return f"{self.artifact_id}-onnx"
 
     @property
     def archive_file_name(self) -> str:
+        if self.family == "gguf_causal_llm" or self.artifact_format == "gguf":
+            return f"{self.package_id}.zip"
         return f"{self.artifact_id}-onnx-int8.zip"
 
 
