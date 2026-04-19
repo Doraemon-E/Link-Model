@@ -3,5 +3,11 @@ name = "link-model"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
-    "huggingface-hub>=1.11.0",
+    "coremltools>=9.0",
+    "huggingface-hub>=0.34.0,<1.0",
+    "numpy>=2.4.4",
+    "safetensors>=0.7.0",
+    "sentencepiece>=0.2.1",
+    "torch==2.7.0",
+    "transformers==4.56.1",
 ]
