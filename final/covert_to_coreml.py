@@ -14,7 +14,7 @@ DEFAULT_OUTPUT_DIR = Path(
 DEFAULT_CONTEXT_LENGTH = 1024
 
 
-def _convert_coreml(model_dir: Path, output_dir: Path, context_length: int):
+def _load_base_model(model_dir: Path) -> torch.nn.Module:
     # 加载并固定PyTorch模型状态
     model = AutoModelForCausalLM.from_pretrained(
         str(model_dir),
@@ -25,14 +25,53 @@ def _convert_coreml(model_dir: Path, output_dir: Path, context_length: int):
     # 推理模式, 关闭dropout等训练行为
     model.eval()
 
-    # 控制注意力机制（Attention）的实现方式，使用最原始，最通用的方式，也最稳定
-    model.config._attn_implementation = "eager"
+    # 更稳的 attention 路径
+    if hasattr(model, "config"):
+        model.config._attn_implementation = "eager"
 
-    # 最基础、最兼容的 RoPE 实现
+    # 更保守的 rope 设置
     if hasattr(model, "model") and hasattr(model.model, "rotary_emb"):
         model.model.rotary_emb.rope_type = "default"
 
-    wrapper = StatefulHunYuanForCoreML(model=model, max_cache_len=context_length)
+    return model
+
+
+def _load_quantized_torch_model(model_dir: Path) -> torch.nn.Module:
+    """
+    先在 Torch 侧做 weight-only PTQ，然后返回“带压缩信息”的 torch model。
+    这样 ct.convert() 时会自动尝试生成压缩后的 Core ML 表达。
+    """
+    model = _load_base_model(model_dir)
+
+    # 只量化 Linear，先别碰 Embedding / LayerNorm / 输出头以外的特殊结构
+    # 这一版先求稳，后面再逐步扩大覆盖范围。
+    config = cto.torch.quantization.PostTrainingQuantizerConfig.from_dict(
+        {
+            "global_config": {
+                "weight_dtype": "int8",
+                # 文档示例里常见 per_block；而量化算法说明里提到 8-bit per-channel 通常精度更稳。
+                # 对 LLM 你可以先试 per_channel；如果当前版本报配置不支持，再退到 per_block + block_size。
+                "granularity": "per_channel",
+            },
+            "module_type_configs": {
+                torch.nn.Linear: None,
+            },
+        }
+    )
+
+    quantizer = cto.torch.quantization.PostTrainingQuantizer(model, config)
+    quantized_model = quantizer.compress()
+    quantized_model.eval()
+    return quantized_model
+
+
+def _convert_coreml(model_dir: Path, output_dir: Path, context_length: int):
+    # 先在 Torch 侧量化/压缩
+    quantized_torch_model = _load_quantized_torch_model(model_dir)
+
+    wrapper = StatefulHunYuanForCoreML(
+        model=quantized_torch_model, max_cache_len=context_length
+    )
     wrapper.eval()
     wrapper.reset_cache()
 
@@ -47,7 +86,7 @@ def _convert_coreml(model_dir: Path, output_dir: Path, context_length: int):
 
     # 构建输出路径
     output_dir.mkdir(parents=True, exist_ok=True)
-    fp16_mlpackage_path = output_dir / "hy_mt_fp16.mlpackage"
+    coreml_path = output_dir / "hy_mt_w8_from_torch.mlpackage"
 
     # 自定义CoreML 转换的 流水线
     default_passes = list(ct.PassPipeline.DEFAULT.passes)
@@ -77,25 +116,7 @@ def _convert_coreml(model_dir: Path, output_dir: Path, context_length: int):
         outputs=[ct.TensorType(name="logits", dtype=np.float16)],
         states=_build_coreml_states(wrapper),
     )
-    fp16_model.save(str(fp16_mlpackage_path))
-
-
-def _quantize_coreml_w8(
-    model_dir: Path,
-    output_dir: Path,
-):
-    fp16_model = ct.models.MLModel(str(model_dir / "hy_mt_fp16.mlpackage"))
-    w8_mlpackage_path = output_dir / "hy_mt_w8.mlpackage"
-    # 对已经转换好的 Core ML mlprogram 做 W8 量化
-    op_config = cto.coreml.OpLinearQuantizerConfig(
-        mode="linear_symmetric",  # 默认；先用这个最稳
-        dtype=np.int8,  # W8
-        granularity="per_channel",  # 8-bit 先用 per_channel
-        weight_threshold=2048,  # 默认值；想覆盖更多小权重可调低到 512
-    )
-    config = cto.coreml.OptimizationConfig(global_config=op_config)
-    w8_model = cto.coreml.linear_quantize_weights(fp16_model, config=config)
-    w8_model.save(str(w8_mlpackage_path))
+    fp16_model.save(str(coreml_path))
 
 
 # helper
@@ -152,10 +173,6 @@ def run():
         model_dir=DEFAULT_MODEL_DIR,
         output_dir=DEFAULT_OUTPUT_DIR,
         context_length=DEFAULT_CONTEXT_LENGTH,
-    )
-    _quantize_coreml_w8(
-        model_dir=DEFAULT_OUTPUT_DIR,
-        output_dir=DEFAULT_OUTPUT_DIR,
     )
 
 
