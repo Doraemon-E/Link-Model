@@ -1,4 +1,0 @@
-{"route":"zh-en","target_language":"English","source_text":"请在今天 18:30 前确认 v1.5.8 发布窗口，并在群里同步最终结果。"}
-{"route":"zh-ja","target_language":"Japanese","source_text":"如果回归测试全部通过，请先灰度 10%，观察 30 分钟后再扩容。"}
-{"route":"zh-ko","target_language":"Korean","source_text":"该接口在弱网下可能超时，请记录 request_id、设备型号和系统版本。"}
-{"route":"zh-zh","target_language":"Chinese","source_text":"请将以下内容改写为正式公告语气：新版本将在明天上午十点开始分批发布。"}
