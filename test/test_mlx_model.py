@@ -8,6 +8,7 @@ from pathlib import Path
 import mlx.core as mx
 from mlx_lm import generate, load
 from mlx_lm.sample_utils import make_logits_processors, make_sampler
+from memory_utils import bytes_to_mb, get_process_rss_bytes
 
 
 def _apply_mlx_compat_patch() -> None:
@@ -47,9 +48,11 @@ def _load_mlx_and_generate(
     max_tokens: int,
 ) -> dict[str, object]:
 
+    memory_before_load_mb = bytes_to_mb(get_process_rss_bytes())
     load_start = time.perf_counter()
     model, tokenizer = load(str(model_dir))
     load_elapsed = time.perf_counter() - load_start
+    memory_after_load_mb = bytes_to_mb(get_process_rss_bytes())
 
     if getattr(tokenizer, "chat_template", None) is not None and hasattr(
         tokenizer, "apply_chat_template"
@@ -95,6 +98,13 @@ def _load_mlx_and_generate(
     return {
         "status": "passed" if text.strip() else "failed",
         "load_seconds": round(load_elapsed, 3),
+        "memory_before_load_mb": memory_before_load_mb,
+        "memory_after_load_mb": memory_after_load_mb,
+        "memory_delta_load_mb": (
+            round(memory_after_load_mb - memory_before_load_mb, 3)
+            if memory_before_load_mb is not None and memory_after_load_mb is not None
+            else None
+        ),
         "generate_seconds": round(gen_elapsed, 3),
         "prompt_tokens": prompt_tokens,
         "output_tokens": output_tokens,

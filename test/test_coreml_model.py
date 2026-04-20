@@ -11,6 +11,7 @@ from pathlib import Path
 import coremltools as ct
 import numpy as np
 from transformers import AutoTokenizer
+from memory_utils import bytes_to_mb, get_process_rss_bytes
 
 
 COREML_DIR = Path("models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml")
@@ -120,9 +121,11 @@ def _run() -> dict[str, object]:
     if not prompt_ids:
         raise RuntimeError("prompt ids is empty")
 
+    memory_before_load_mb = bytes_to_mb(get_process_rss_bytes())
     load_start = time.perf_counter()
     predictor = _load_coreml_predictor(model_path, compute_unit)
     load_elapsed = time.perf_counter() - load_start
+    memory_after_load_mb = bytes_to_mb(get_process_rss_bytes())
 
     state = predictor.make_state()
     if state is None:
@@ -169,6 +172,13 @@ def _run() -> dict[str, object]:
         "prompt_tokens": len(prompt_ids),
         "output_tokens": len(generated_ids),
         "load_seconds": round(load_elapsed, 3),
+        "memory_before_load_mb": memory_before_load_mb,
+        "memory_after_load_mb": memory_after_load_mb,
+        "memory_delta_load_mb": (
+            round(memory_after_load_mb - memory_before_load_mb, 3)
+            if memory_before_load_mb is not None and memory_after_load_mb is not None
+            else None
+        ),
         "first_token_latency_seconds": round(step_times[0], 3) if step_times else None,
         "generate_seconds": round(float(sum(step_times)), 3),
         "generated_text": text,
@@ -185,6 +195,9 @@ def main():
         "inference": {
             "compute_unit": result["compute_unit"],
             "load_seconds": result["load_seconds"],
+            "memory_before_load_mb": result["memory_before_load_mb"],
+            "memory_after_load_mb": result["memory_after_load_mb"],
+            "memory_delta_load_mb": result["memory_delta_load_mb"],
             "first_token_latency_seconds": result["first_token_latency_seconds"],
             "generate_seconds": result["generate_seconds"],
             "prompt_tokens": result["prompt_tokens"],
