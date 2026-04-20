@@ -3,6 +3,7 @@ import coremltools as ct
 import coremltools.optimize as cto
 import torch
 from pathlib import Path
+import subprocess
 from stateful_hunyuan_for_coreml import StatefulHunYuanForCoreML
 from torch.export import Dim
 import numpy as np
@@ -11,7 +12,8 @@ DEFAULT_MODEL_DIR = Path("models/translation/downloaded/hy-mt1.5-1.8b")
 DEFAULT_OUTPUT_DIR = Path(
     "models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml"
 )
-DEFAULT_CONTEXT_LENGTH = 1024
+DEFAULT_PACKAGED_ZIP = Path("models/translation/packaged/hy-mt1.5-1.8b-coreml-int8.zip")
+DEFAULT_CONTEXT_LENGTH = 256
 
 
 def _load_base_model(model_dir: Path) -> torch.nn.Module:
@@ -65,7 +67,7 @@ def _load_quantized_torch_model(model_dir: Path) -> torch.nn.Module:
     return quantized_model
 
 
-def _convert_coreml(model_dir: Path, output_dir: Path, context_length: int):
+def _convert_coreml(model_dir: Path, output_dir: Path, context_length: int) -> Path:
     # 先在 Torch 侧量化/压缩
     quantized_torch_model = _load_quantized_torch_model(model_dir)
 
@@ -97,7 +99,7 @@ def _convert_coreml(model_dir: Path, output_dir: Path, context_length: int):
     custom_pass_pipeline.remove_passes(["common::canonicalize_inplace_pattern"])
 
     # 转换成CoreML
-    fp16_model = ct.convert(
+    coreml_model = ct.convert(
         exported_program,
         convert_to="mlprogram",
         minimum_deployment_target=ct.target.iOS18,
@@ -116,7 +118,18 @@ def _convert_coreml(model_dir: Path, output_dir: Path, context_length: int):
         outputs=[ct.TensorType(name="logits", dtype=np.float16)],
         states=_build_coreml_states(wrapper),
     )
-    fp16_model.save(str(coreml_path))
+    coreml_model.save(str(coreml_path))
+    return coreml_path
+
+
+def _make_zip_with_parent(source_dir: Path, zip_path: Path) -> None:
+    zip_path.parent.mkdir(parents=True, exist_ok=True)
+    if zip_path.exists():
+        zip_path.unlink()
+    subprocess.run(
+        ["/usr/bin/ditto", "-c", "-k", "--keepParent", str(source_dir), str(zip_path)],
+        check=True,
+    )
 
 
 # helper
@@ -169,10 +182,14 @@ def _build_coreml_states(
 
 
 def run():
-    _convert_coreml(
+    coreml_path = _convert_coreml(
         model_dir=DEFAULT_MODEL_DIR,
         output_dir=DEFAULT_OUTPUT_DIR,
         context_length=DEFAULT_CONTEXT_LENGTH,
+    )
+    _make_zip_with_parent(
+        source_dir=coreml_path,
+        zip_path=DEFAULT_PACKAGED_ZIP,
     )
 
 
