@@ -102,17 +102,20 @@ def _run() -> dict[str, object]:
     tempfile.tempdir = str(tmpdir)
 
     tokenizer = AutoTokenizer.from_pretrained(str(tokenizer_dir))
+    # 判断什么时候结束生成
     eos_ids = _load_eos_ids(tokenizer_dir, tokenizer)
     prompt = _build_prompt(TARGET_LANGUAGE, SOURCE_TEXT)
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": prompt},
     ]
+    # 将 chat_template 转成 token
     prompt_ids = tokenizer.apply_chat_template(
         messages,
         tokenize=True,
         add_generation_prompt=False,
     )
+    # 取最大窗口长度
     prompt_ids = prompt_ids[-CONTEXT_LENGTH:]
     if not prompt_ids:
         raise RuntimeError("prompt ids is empty")
@@ -172,25 +175,8 @@ def _run() -> dict[str, object]:
     }
 
 
-def main() -> int:
-    try:
-        result = _run()
-    except Exception as exc:
-        print(
-            json.dumps(
-                {
-                    "status": "failed",
-                    "reason": "inference_error",
-                    "error_type": type(exc).__name__,
-                    "error_message": str(exc),
-                    "coreml_dir": str(COREML_DIR.expanduser().resolve()),
-                    "tokenizer_dir": str(TOKENIZER_DIR.expanduser().resolve()),
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
-        )
-        return 1
+def main():
+    result = _run()
 
     summary = {
         "status": "passed",
@@ -215,4 +201,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
