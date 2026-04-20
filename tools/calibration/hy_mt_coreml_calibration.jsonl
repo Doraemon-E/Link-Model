@@ -1,0 +1,12 @@
+{"route":"zh-en","target_language":"English","source_text":"今天下午 3:30 在 5A 会议室同步 v1.5.8 发布计划，并确认官网文档链接是否更新。"}
+{"route":"zh-en","target_language":"English","source_text":"请把这个补丁先部署到预发布环境，观察 30 分钟后再全量发布。"}
+{"route":"zh-en","target_language":"English","source_text":"这个接口在弱网场景下会超时，请在日志里保留 request_id 方便排查。"}
+{"route":"zh-ja","target_language":"Japanese","source_text":"今天下午 3:30 在 5A 会议室同步 v1.5.8 发布计划，并确认官网文档链接是否更新。"}
+{"route":"zh-ja","target_language":"Japanese","source_text":"请把这个补丁先部署到预发布环境，观察 30 分钟后再全量发布。"}
+{"route":"zh-ja","target_language":"Japanese","source_text":"这个接口在弱网场景下会超时，请在日志里保留 request_id 方便排查。"}
+{"route":"zh-ko","target_language":"Korean","source_text":"今天下午 3:30 在 5A 会议室同步 v1.5.8 发布计划，并确认官网文档链接是否更新。"}
+{"route":"zh-ko","target_language":"Korean","source_text":"请把这个补丁先部署到预发布环境，观察 30 分钟后再全量发布。"}
+{"route":"zh-ko","target_language":"Korean","source_text":"这个接口在弱网场景下会超时，请在日志里保留 request_id 方便排查。"}
+{"route":"zh-zh","target_language":"Chinese","source_text":"请将以下句子改写为更正式的书面语：我们已经完成上线前的最后一次回归测试。"}
+{"route":"zh-zh","target_language":"Chinese","source_text":"请将以下内容润色为公告语气：新版本将于明天上午十点开始灰度发布。"}
+{"route":"zh-zh","target_language":"Chinese","source_text":"请将以下文本重写得更简洁：如果遇到登录失败，请检查网络连接并稍后重试。"}

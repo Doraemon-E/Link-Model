@@ -3,7 +3,7 @@ name = "link-model"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
-    "coremltools>=9.0",
+    "coremltools==9.0",
     "huggingface-hub>=0.34.0,<1.0",
     "numpy>=2.4.4",
     "safetensors>=0.7.0",

@@ -1,5 +1,6 @@
 """Utilities for preparing HY-MT model assets."""
 
+from .coreml_a8_stateful import linear_quantize_activations_stateful
 from .download import (
     DEFAULT_MLX_8BIT_DIR,
     DEFAULT_ORIGINAL_DIR,
@@ -18,6 +19,7 @@ from .download import (
 )
 
 __all__ = [
+    "linear_quantize_activations_stateful",
     "DEFAULT_MLX_8BIT_DIR",
     "DEFAULT_ORIGINAL_DIR",
     "DEFAULT_REPORT_PATH",

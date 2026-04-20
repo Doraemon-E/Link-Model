@@ -245,7 +245,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "coremltools", specifier = ">=9.0" },
+    { name = "coremltools", specifier = "==9.0" },
     { name = "huggingface-hub", specifier = ">=0.34.0,<1.0" },
     { name = "numpy", specifier = ">=2.4.4" },
     { name = "safetensors", specifier = ">=0.7.0" },
