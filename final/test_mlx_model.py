@@ -4,19 +4,32 @@ from __future__ import annotations
 import json
 import sys
 import time
+import warnings
 from pathlib import Path
 from mlx_lm import generate, load
+from mlx_lm.sample_utils import make_logits_processors, make_sampler
+
+
+warnings.filterwarnings(
+    "ignore",
+    message=r"mx\.metal\.device_info is deprecated.*",
+)
 
 
 MODEL_DIR = Path("models/translation/converted/mlx-int8/hy-mt1.5-1.8b-mlx")
-TARGET_LANGUAGE = "English"
+TARGET_LANGUAGE = "英语"
 SOURCE_TEXT = "今天下午三点半在5A会议室开会。"
 PROMPT = (
-    f"将以下文本翻译为{TARGET_LANGUAGE}，注意只需要输出翻译后的结果，不要额外解释：\n\n"
+    f"将以下文本翻译为{TARGET_LANGUAGE}，注意字词、语法、语义语境，"
+    "并只输出翻译结果：\n\n"
     f"{SOURCE_TEXT}"
 )
 MAX_TOKENS = 64
 PRINT_GENERATED_TEXT = True
+TOP_K = 20
+TOP_P = 0.6
+TEMPERATURE = 0.7
+REPETITION_PENALTY = 1.05
 
 
 def _load_mlx_and_generate(
@@ -29,20 +42,45 @@ def _load_mlx_and_generate(
     model, tokenizer = load(str(model_dir))
     load_elapsed = time.perf_counter() - load_start
 
+    if getattr(tokenizer, "chat_template", None) is not None and hasattr(
+        tokenizer, "apply_chat_template"
+    ):
+        messages = [{"role": "user", "content": prompt}]
+        prompt_for_generate = tokenizer.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+        )
+    else:
+        prompt_for_generate = prompt
+
+    sampler = make_sampler(
+        temp=TEMPERATURE,
+        top_p=TOP_P,
+        top_k=TOP_K,
+    )
+    logits_processors = make_logits_processors(
+        repetition_penalty=REPETITION_PENALTY
+    )
+
     gen_start = time.perf_counter()
     output = generate(
         model=model,
         tokenizer=tokenizer,
-        prompt=prompt,
+        prompt=prompt_for_generate,
         max_tokens=max_tokens,
+        sampler=sampler,
+        logits_processors=logits_processors,
         verbose=False,
     )
     gen_elapsed = time.perf_counter() - gen_start
 
     text = output if isinstance(output, str) else str(output)
-    prompt_tokens = (
-        len(tokenizer.encode(prompt)) if hasattr(tokenizer, "encode") else None
-    )
+    if isinstance(prompt_for_generate, list):
+        prompt_tokens = len(prompt_for_generate)
+    elif isinstance(prompt_for_generate, str) and hasattr(tokenizer, "encode"):
+        prompt_tokens = len(tokenizer.encode(prompt_for_generate))
+    else:
+        prompt_tokens = None
     output_tokens = (
         len(tokenizer.encode(text)) if hasattr(tokenizer, "encode") else None
     )
