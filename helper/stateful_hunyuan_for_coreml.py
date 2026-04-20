@@ -91,6 +91,11 @@ class StatefulHunYuanForCoreML(torch.nn.Module):
             return_dict=True,
         )
 
-        next_position = torch.clamp(cache_position[-1:] + 1, max=self.max_cache_len)
+        # next_position = torch.clamp(cache_position[-1:] + 1, max=self.max_cache_len)
+        # 修复步长不对的问题
+        next_position = torch.clamp(
+            self.cache_position.to(torch.int64) + input_ids.shape[1],
+            max=self.max_cache_len - 1,
+        )
         self.cache_position.copy_(next_position.to(self.cache_position.dtype))
         return outputs.logits.to(torch.float16)
