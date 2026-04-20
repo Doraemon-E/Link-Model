@@ -22,7 +22,7 @@ SOURCE_TEXT = "今天下午三点半在5A会议室开会。"
 SYSTEM_PROMPT = "You are a translation engine."
 MAX_NEW_TOKENS = 64
 CONTEXT_LENGTH = 256
-COMPUTE_UNIT = "cpuAndGPU"
+COMPUTE_UNIT = "cpuOnly"
 PRINT_GENERATED_TEXT = True
 
 
