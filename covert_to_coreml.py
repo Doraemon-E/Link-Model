@@ -3,23 +3,29 @@ import coremltools as ct
 import coremltools.optimize as cto
 import torch
 from pathlib import Path
-import subprocess
+from datetime import datetime
 from helper.stateful_hunyuan_for_coreml import StatefulHunYuanForCoreML
+from helper.coreml_quantization_helpers import (
+    assert_coreml_weight_quantization_ops,
+    assert_torch_quantization_metadata,
+)
 from torch.export import Dim
 import numpy as np
-from mlx_lm import convert
 
-from helper.coreml_bundle_helpers import copy_runtime_files, write_translation_manifest
+from helper.coreml_bundle_helpers import (
+    build_timestamped_coreml_paths,
+    copy_runtime_files,
+    make_zip_with_parent,
+    package_coreml_bundle,
+    write_translation_manifest,
+)
 
 
 DEFAULT_MODEL_DIR = Path("models/translation/downloaded/hy-mt1.5-1.8b")
 
-DEFAULT_COREML_OUTPUT_DIR = Path(
-    "models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml"
-)
-DEFAULT_COREML_PACKAGED_ZIP = Path(
-    "models/translation/packaged/hy-mt1.5-1.8b-coreml-int8.zip"
-)
+DEFAULT_COREML_OUTPUT_ROOT = Path("models/translation/converted/coreml-int8")
+DEFAULT_COREML_ARTIFACT_STEM = "hy-mt1.5-1.8b-coreml-int8"
+DEFAULT_COREML_PACKAGED_ROOT = Path("models/translation/packaged")
 
 DEFAULT_MLX_OUTPUT_DIR = Path("models/translation/converted/mlx-int8/hy-mt1.5-1.8b-mlx")
 DEFAULT_MLX_PACKAGED_ZIP = Path(
@@ -27,7 +33,13 @@ DEFAULT_MLX_PACKAGED_ZIP = Path(
 )
 
 DEFAULT_CONTEXT_LENGTH = 256
+DEFAULT_COREML_Q_BITS = 8
+DEFAULT_COREML_Q_GROUP_SIZE = 64
+DEFAULT_COREML_Q_MODE = "affine"
+
 DEFAULT_MLX_Q_BITS = 8
+DEFAULT_MLX_Q_GROUP_SIZE = 64
+DEFAULT_MLX_Q_MODE = "affine"
 
 
 def _load_base_model(model_dir: Path) -> torch.nn.Module:
@@ -52,38 +64,92 @@ def _load_base_model(model_dir: Path) -> torch.nn.Module:
     return model
 
 
-def _load_quantized_torch_model(model_dir: Path) -> torch.nn.Module:
+def _resolve_coreml_quantization_options(
+    q_bits: int,
+    q_mode: str,
+) -> tuple[str, str]:
+    if q_bits == 8:
+        weight_dtype = "int8"
+    elif q_bits == 4:
+        weight_dtype = "int4"
+    else:
+        raise ValueError(f"unsupported q_bits={q_bits}, only 4 or 8 are supported")
+
+    normalized_q_mode = q_mode.lower()
+    if normalized_q_mode not in {"affine", "symmetric"}:
+        raise ValueError(
+            f"unsupported q_mode={q_mode}, expected one of: affine, symmetric"
+        )
+    return weight_dtype, normalized_q_mode
+
+
+def _build_linear_ptq_config(
+    q_bits: int,
+    q_group_size: int,
+    q_mode: str,
+) -> cto.torch.quantization.PostTrainingQuantizerConfig:
+    if q_group_size <= 0:
+        raise ValueError(f"q_group_size must be > 0, got {q_group_size}")
+
+    weight_dtype, quantization_scheme = _resolve_coreml_quantization_options(
+        q_bits=q_bits,
+        q_mode=q_mode,
+    )
+    return cto.torch.quantization.PostTrainingQuantizerConfig.from_dict(
+        {
+            "module_type_configs": {
+                torch.nn.Linear: {
+                    "weight_dtype": weight_dtype,
+                    "granularity": "per_block",
+                    "block_size": q_group_size,
+                    "quantization_scheme": quantization_scheme,
+                },
+            },
+        }
+    )
+
+
+def _load_quantized_torch_model(
+    model_dir: Path,
+    q_bits: int,
+    q_group_size: int,
+    q_mode: str,
+) -> torch.nn.Module:
     """
     先在 Torch 侧做 weight-only PTQ，然后返回“带压缩信息”的 torch model。
     这样 ct.convert() 时会自动尝试生成压缩后的 Core ML 表达。
     """
     model = _load_base_model(model_dir)
 
-    # 只量化 Linear，先别碰 Embedding / LayerNorm / 输出头以外的特殊结构
-    # 这一版先求稳，后面再逐步扩大覆盖范围。
-    config = cto.torch.quantization.PostTrainingQuantizerConfig.from_dict(
-        {
-            "global_config": {
-                "weight_dtype": "int8",
-                # 文档示例里常见 per_block；而量化算法说明里提到 8-bit per-channel 通常精度更稳。
-                # 对 LLM 你可以先试 per_channel；如果当前版本报配置不支持，再退到 per_block + block_size。
-                "granularity": "per_channel",
-            },
-            "module_type_configs": {
-                torch.nn.Linear: None,
-            },
-        }
+    # 只量化 Linear，采用 blockwise 量化对齐 MLX 的 W8/G64/affine 策略。
+    config = _build_linear_ptq_config(
+        q_bits=q_bits,
+        q_group_size=q_group_size,
+        q_mode=q_mode,
     )
 
     quantizer = cto.torch.quantization.PostTrainingQuantizer(model, config)
     quantized_model = quantizer.compress()
     quantized_model.eval()
+    assert_torch_quantization_metadata(quantized_model)
     return quantized_model
 
 
-def _convert_coreml(model_dir: Path, output_dir: Path, context_length: int) -> Path:
+def _convert_coreml(
+    model_dir: Path,
+    output_dir: Path,
+    context_length: int,
+    q_bits: int,
+    q_group_size: int,
+    q_mode: str,
+) -> Path:
     # 先在 Torch 侧量化/压缩
-    quantized_torch_model = _load_quantized_torch_model(model_dir)
+    quantized_torch_model = _load_quantized_torch_model(
+        model_dir=model_dir,
+        q_bits=q_bits,
+        q_group_size=q_group_size,
+        q_mode=q_mode,
+    )
 
     wrapper = StatefulHunYuanForCoreML(
         model=quantized_torch_model, max_cache_len=context_length
@@ -132,6 +198,7 @@ def _convert_coreml(model_dir: Path, output_dir: Path, context_length: int) -> P
         outputs=[ct.TensorType(name="logits", dtype=np.float16)],
         states=_build_coreml_states(wrapper),
     )
+    assert_coreml_weight_quantization_ops(coreml_model)
     coreml_model.save(str(coreml_path))
     return coreml_path
 
@@ -139,12 +206,16 @@ def _convert_coreml(model_dir: Path, output_dir: Path, context_length: int) -> P
 def _convert_mlx(
     model_dir: Path,
     output_dir: Path,
-    q_bits: int = 8,
+    q_bits: int = DEFAULT_MLX_Q_BITS,
+    q_group_size: int = DEFAULT_MLX_Q_GROUP_SIZE,
+    q_mode: str = DEFAULT_MLX_Q_MODE,
 ) -> Path:
     """
     把 Hugging Face / 本地模型目录转成 MLX 量化版本。
     这里走 mlx-lm 的 Python API，不再用 subprocess。
     """
+    from mlx_lm import convert
+
     # 官方公开示例是 convert(repo, quantize=True, ...)
     # 这里再补上本地输出目录和 q_bits。
     convert(
@@ -152,19 +223,11 @@ def _convert_mlx(
         mlx_path=str(output_dir),
         quantize=True,
         q_bits=q_bits,
+        q_group_size=q_group_size,
+        q_mode=q_mode,
     )
 
     return output_dir
-
-
-def _make_zip_with_parent(source_dir: Path, zip_path: Path) -> None:
-    zip_path.parent.mkdir(parents=True, exist_ok=True)
-    if zip_path.exists():
-        zip_path.unlink()
-    subprocess.run(
-        ["/usr/bin/ditto", "-c", "-k", "--keepParent", str(source_dir), str(zip_path)],
-        check=True,
-    )
 
 
 # helper
@@ -217,24 +280,36 @@ def _build_coreml_states(
 
 
 def run():
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    coreml_output_dir, coreml_packaged_zip = build_timestamped_coreml_paths(
+        timestamp,
+        output_root=DEFAULT_COREML_OUTPUT_ROOT,
+        packaged_root=DEFAULT_COREML_PACKAGED_ROOT,
+        artifact_stem=DEFAULT_COREML_ARTIFACT_STEM,
+    )
+
     # 1. Core ML W8
     coreml_path = _convert_coreml(
         model_dir=DEFAULT_MODEL_DIR,
-        output_dir=DEFAULT_COREML_OUTPUT_DIR,
+        output_dir=coreml_output_dir,
         context_length=DEFAULT_CONTEXT_LENGTH,
+        q_bits=DEFAULT_COREML_Q_BITS,
+        q_group_size=DEFAULT_COREML_Q_GROUP_SIZE,
+        q_mode=DEFAULT_COREML_Q_MODE,
     )
     copy_runtime_files(
         model_dir=DEFAULT_MODEL_DIR,
-        output_dir=DEFAULT_COREML_OUTPUT_DIR,
+        output_dir=coreml_output_dir,
     )
     write_translation_manifest(
-        output_dir=DEFAULT_COREML_OUTPUT_DIR,
+        output_dir=coreml_output_dir,
         model_file_name=coreml_path.name,
         context_length=DEFAULT_CONTEXT_LENGTH,
     )
-    _make_zip_with_parent(
-        source_dir=DEFAULT_COREML_OUTPUT_DIR,
-        zip_path=DEFAULT_COREML_PACKAGED_ZIP,
+    package_coreml_bundle(
+        source_dir=coreml_output_dir,
+        model_file_name=coreml_path.name,
+        zip_path=coreml_packaged_zip,
     )
 
     # 2. MLX W8
@@ -242,8 +317,10 @@ def run():
     #     model_dir=DEFAULT_MODEL_DIR,
     #     output_dir=DEFAULT_MLX_OUTPUT_DIR,
     #     q_bits=DEFAULT_MLX_Q_BITS,
+    #     q_group_size=DEFAULT_MLX_Q_GROUP_SIZE,
+    #     q_mode=DEFAULT_MLX_Q_MODE,
     # )
-    # _make_zip_with_parent(
+    # make_zip_with_parent(
     #     source_dir=mlx_path,
     #     zip_path=DEFAULT_MLX_PACKAGED_ZIP,
     # )

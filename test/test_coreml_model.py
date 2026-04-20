@@ -14,13 +14,15 @@ from transformers import AutoTokenizer
 
 
 COREML_DIR = Path("models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml")
+COREML_ROOT_DIR = Path("models/translation/converted/coreml-int8")
+COREML_TIMESTAMP_PREFIX = "hy-mt1.5-1.8b-coreml-int8-"
 TOKENIZER_DIR = Path("models/translation/converted/mlx-int8/hy-mt1.5-1.8b-mlx")
 TARGET_LANGUAGE = "English"
 SOURCE_TEXT = "今天下午三点半在5A会议室开会。"
 SYSTEM_PROMPT = "You are a translation engine."
 MAX_NEW_TOKENS = 64
 CONTEXT_LENGTH = 256
-COMPUTE_UNIT = "cpuAndNeuralEngine"
+COMPUTE_UNIT = "cpuAndGPU"
 PRINT_GENERATED_TEXT = True
 
 
@@ -35,6 +37,31 @@ def _resolve_model_path(coreml_dir: Path) -> Path:
         if candidate.exists():
             return candidate
     raise RuntimeError(f"no coreml model found under: {coreml_dir}")
+
+
+def _resolve_coreml_dir() -> Path:
+    root = COREML_ROOT_DIR.expanduser().resolve()
+    if root.is_dir():
+        candidates = sorted(
+            [
+                child
+                for child in root.iterdir()
+                if child.is_dir() and child.name.startswith(COREML_TIMESTAMP_PREFIX)
+            ]
+        )
+        if candidates:
+            return candidates[-1]
+
+    # Backward compatibility with legacy fixed directory.
+    legacy = COREML_DIR.expanduser().resolve()
+    if legacy.is_dir():
+        return legacy
+
+    raise RuntimeError(
+        f"no coreml output dir found under: {root}, "
+        f"expected timestamp prefix: {COREML_TIMESTAMP_PREFIX}, "
+        f"or legacy dir: {legacy}"
+    )
 
 
 def _resolve_compute_unit(name: str) -> ct.ComputeUnit:
@@ -91,7 +118,7 @@ def _predict_with_optional_state(predictor, inputs: dict[str, np.ndarray], state
 
 
 def _run() -> dict[str, object]:
-    coreml_dir = COREML_DIR.expanduser().resolve()
+    coreml_dir = _resolve_coreml_dir()
     tokenizer_dir = TOKENIZER_DIR.expanduser().resolve()
     model_path = _resolve_model_path(coreml_dir)
     compute_unit = _resolve_compute_unit(COMPUTE_UNIT)
