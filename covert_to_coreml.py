@@ -4,12 +4,12 @@ import coremltools.optimize as cto
 import torch
 from pathlib import Path
 import subprocess
-from stateful_hunyuan_for_coreml import StatefulHunYuanForCoreML
+from helper.stateful_hunyuan_for_coreml import StatefulHunYuanForCoreML
 from torch.export import Dim
 import numpy as np
 from mlx_lm import convert
 
-from coreml_bundle_helpers import copy_runtime_files, write_translation_manifest
+from helper.coreml_bundle_helpers import copy_runtime_files, write_translation_manifest
 
 
 DEFAULT_MODEL_DIR = Path("models/translation/downloaded/hy-mt1.5-1.8b")
@@ -238,15 +238,15 @@ def run():
     )
 
     # 2. MLX W8
-    mlx_path = _convert_mlx(
-        model_dir=DEFAULT_MODEL_DIR,
-        output_dir=DEFAULT_MLX_OUTPUT_DIR,
-        q_bits=DEFAULT_MLX_Q_BITS,
-    )
-    _make_zip_with_parent(
-        source_dir=mlx_path,
-        zip_path=DEFAULT_MLX_PACKAGED_ZIP,
-    )
+    # mlx_path = _convert_mlx(
+    #     model_dir=DEFAULT_MODEL_DIR,
+    #     output_dir=DEFAULT_MLX_OUTPUT_DIR,
+    #     q_bits=DEFAULT_MLX_Q_BITS,
+    # )
+    # _make_zip_with_parent(
+    #     source_dir=mlx_path,
+    #     zip_path=DEFAULT_MLX_PACKAGED_ZIP,
+    # )
 
 
 if __name__ == "__main__":
