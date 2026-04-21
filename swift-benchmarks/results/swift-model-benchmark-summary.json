@@ -1,0 +1,87 @@
+{
+  "artifactStem" : "hy-mt1.5-1.8b-coreml-int8",
+  "coremlComputeUnit" : "cpuAndNeuralEngine",
+  "coremlRootDir" : "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8",
+  "coremlVariants" : [
+    "cache-c64"
+  ],
+  "failureCount" : 0,
+  "failures" : [
+
+  ],
+  "fastestLoad" : {
+    "label" : "coreml:cache-c64",
+    "runtime" : "coreml",
+    "value" : 0.136,
+    "variant" : "cache-c64"
+  },
+  "fastestTranslation" : {
+    "label" : "coreml:cache-c64",
+    "runtime" : "coreml",
+    "value" : 10.201,
+    "variant" : "cache-c64"
+  },
+  "generatedAt" : "2026-04-21T01:03:36.409Z",
+  "includeMLX" : false,
+  "lowestLoadMemory" : {
+    "label" : "coreml:cache-c64",
+    "runtime" : "coreml",
+    "value" : 40.547,
+    "variant" : "cache-c64"
+  },
+  "mlxModelDir" : "/Users/doracmon/Code/Aura/link-model/models/translation/converted/mlx-int8/hy-mt1.5-1.8b-mlx",
+  "modelRows" : [
+    {
+      "coremlDir" : "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c64",
+      "generateSeconds" : 1.477,
+      "label" : "coreml:cache-c64",
+      "loadSeconds" : 0.136,
+      "memoryRSSAfterGenerateMB" : 3455.078,
+      "memoryRSSAfterLoadMB" : 40.547,
+      "memoryRSSBeforeLoadMB" : 12.984,
+      "memoryRSSDeltaLoadMB" : 27.563,
+      "modelPath" : "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c64/hy_mt_w8_from_torch.mlmodelc",
+      "outputTokens" : 24,
+      "promptTokens" : 49,
+      "runtime" : "coreml",
+      "statefulRuntime" : true,
+      "translationTotalSeconds" : 10.201,
+      "variant" : "cache-c64"
+    }
+  ],
+  "rankings" : {
+    "by_load_seconds" : [
+      {
+        "label" : "coreml:cache-c64",
+        "metric" : "loadSeconds",
+        "rank" : 1,
+        "runtime" : "coreml",
+        "value" : 0.136,
+        "variant" : "cache-c64"
+      }
+    ],
+    "by_memory_rss_after_load_mb" : [
+      {
+        "label" : "coreml:cache-c64",
+        "metric" : "memoryRSSAfterLoadMB",
+        "rank" : 1,
+        "runtime" : "coreml",
+        "value" : 40.547,
+        "variant" : "cache-c64"
+      }
+    ],
+    "by_translation_total_seconds" : [
+      {
+        "label" : "coreml:cache-c64",
+        "metric" : "translationTotalSeconds",
+        "rank" : 1,
+        "runtime" : "coreml",
+        "value" : 10.201,
+        "variant" : "cache-c64"
+      }
+    ]
+  },
+  "status" : "completed",
+  "successCount" : 1,
+  "totalModels" : 1
+}

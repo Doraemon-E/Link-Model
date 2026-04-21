@@ -1,0 +1,628 @@
+{
+  "status": "completed",
+  "generated_at": "2026-04-20T13:01:19.906782+00:00",
+  "config": {
+    "coreml_compute_unit": "cpuAndNeuralEngine",
+    "source_text": "今天下午三点半在5A会议室开会。",
+    "target_language": "English",
+    "max_new_tokens": 64,
+    "requested_context_length": 256,
+    "coreml_root_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8",
+    "artifact_stem": "hy-mt1.5-1.8b-coreml-int8",
+    "coreml_variants": [
+      "cache",
+      "cache-c128",
+      "cache-c256",
+      "cache-c64",
+      "cache-c96",
+      "cache-opt",
+      "nocache"
+    ],
+    "include_mlx": true,
+    "mlx_model_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/mlx-int8/hy-mt1.5-1.8b-mlx"
+  },
+  "rows": [
+    {
+      "status": "passed",
+      "runtime": "coreml",
+      "variant": "cache",
+      "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache",
+      "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache/hy_mt_w8_from_torch.mlmodelc",
+      "inference": {
+        "variant": "cache",
+        "compute_unit": "cpuAndNeuralEngine",
+        "compiled_materialized": false,
+        "stateful_runtime": true,
+        "state_error": null,
+        "load_seconds": 0.15,
+        "prefill_seconds": 6.907,
+        "first_token_latency_seconds": 0.062,
+        "generate_seconds": 1.413,
+        "translation_total_seconds": 8.522,
+        "end_to_end_seconds": 8.708,
+        "prompt_tokens": 37,
+        "output_tokens": 21,
+        "memory_rss_before_load_mb": 414.344,
+        "memory_rss_after_load_mb": 437.094,
+        "memory_rss_after_generate_mb": 3661.125,
+        "memory_rss_delta_load_mb": 22.75,
+        "memory_rss_before_load_bytes": 434470912,
+        "memory_rss_after_load_bytes": 458326016,
+        "memory_rss_after_generate_bytes": 3838967808,
+        "memory_rss_delta_load_bytes": 23855104
+      },
+      "effective_context_length": 256
+    },
+    {
+      "status": "passed",
+      "runtime": "coreml",
+      "variant": "cache-c128",
+      "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c128",
+      "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c128/hy_mt_w8_from_torch.mlmodelc",
+      "inference": {
+        "variant": "cache-c128",
+        "compute_unit": "cpuAndNeuralEngine",
+        "compiled_materialized": false,
+        "stateful_runtime": true,
+        "state_error": null,
+        "load_seconds": 0.151,
+        "prefill_seconds": 7.41,
+        "first_token_latency_seconds": 0.06,
+        "generate_seconds": 1.323,
+        "translation_total_seconds": 8.937,
+        "end_to_end_seconds": 9.119,
+        "prompt_tokens": 37,
+        "output_tokens": 21,
+        "memory_rss_before_load_mb": 388.219,
+        "memory_rss_after_load_mb": 410.984,
+        "memory_rss_after_generate_mb": 3638.078,
+        "memory_rss_delta_load_mb": 22.766,
+        "memory_rss_before_load_bytes": 407076864,
+        "memory_rss_after_load_bytes": 430948352,
+        "memory_rss_after_generate_bytes": 3814801408,
+        "memory_rss_delta_load_bytes": 23871488
+      },
+      "effective_context_length": 128
+    },
+    {
+      "status": "passed",
+      "runtime": "coreml",
+      "variant": "cache-c256",
+      "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c256",
+      "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c256/hy_mt_w8_from_torch.mlmodelc",
+      "inference": {
+        "variant": "cache-c256",
+        "compute_unit": "cpuAndNeuralEngine",
+        "compiled_materialized": false,
+        "stateful_runtime": true,
+        "state_error": null,
+        "load_seconds": 0.157,
+        "prefill_seconds": 7.223,
+        "first_token_latency_seconds": 0.065,
+        "generate_seconds": 1.377,
+        "translation_total_seconds": 8.812,
+        "end_to_end_seconds": 8.993,
+        "prompt_tokens": 37,
+        "output_tokens": 21,
+        "memory_rss_before_load_mb": 418.578,
+        "memory_rss_after_load_mb": 441.594,
+        "memory_rss_after_generate_mb": 3576.406,
+        "memory_rss_delta_load_mb": 23.016,
+        "memory_rss_before_load_bytes": 438910976,
+        "memory_rss_after_load_bytes": 463044608,
+        "memory_rss_after_generate_bytes": 3750133760,
+        "memory_rss_delta_load_bytes": 24133632
+      },
+      "effective_context_length": 256
+    },
+    {
+      "status": "passed",
+      "runtime": "coreml",
+      "variant": "cache-c64",
+      "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c64",
+      "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c64/hy_mt_w8_from_torch.mlmodelc",
+      "inference": {
+        "variant": "cache-c64",
+        "compute_unit": "cpuAndNeuralEngine",
+        "compiled_materialized": false,
+        "stateful_runtime": true,
+        "state_error": null,
+        "load_seconds": 0.152,
+        "prefill_seconds": 6.939,
+        "first_token_latency_seconds": 0.061,
+        "generate_seconds": 1.318,
+        "translation_total_seconds": 8.461,
+        "end_to_end_seconds": 8.642,
+        "prompt_tokens": 37,
+        "output_tokens": 21,
+        "memory_rss_before_load_mb": 416.469,
+        "memory_rss_after_load_mb": 440.438,
+        "memory_rss_after_generate_mb": 3616.938,
+        "memory_rss_delta_load_mb": 23.969,
+        "memory_rss_before_load_bytes": 436699136,
+        "memory_rss_after_load_bytes": 461832192,
+        "memory_rss_after_generate_bytes": 3792633856,
+        "memory_rss_delta_load_bytes": 25133056
+      },
+      "effective_context_length": 64
+    },
+    {
+      "status": "passed",
+      "runtime": "coreml",
+      "variant": "cache-c96",
+      "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c96",
+      "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c96/hy_mt_w8_from_torch.mlmodelc",
+      "inference": {
+        "variant": "cache-c96",
+        "compute_unit": "cpuAndNeuralEngine",
+        "compiled_materialized": false,
+        "stateful_runtime": true,
+        "state_error": null,
+        "load_seconds": 0.151,
+        "prefill_seconds": 7.125,
+        "first_token_latency_seconds": 0.057,
+        "generate_seconds": 1.263,
+        "translation_total_seconds": 8.593,
+        "end_to_end_seconds": 8.775,
+        "prompt_tokens": 37,
+        "output_tokens": 21,
+        "memory_rss_before_load_mb": 412.812,
+        "memory_rss_after_load_mb": 434.281,
+        "memory_rss_after_generate_mb": 3612.75,
+        "memory_rss_delta_load_mb": 21.469,
+        "memory_rss_before_load_bytes": 432865280,
+        "memory_rss_after_load_bytes": 455376896,
+        "memory_rss_after_generate_bytes": 3788242944,
+        "memory_rss_delta_load_bytes": 22511616
+      },
+      "effective_context_length": 96
+    },
+    {
+      "status": "passed",
+      "runtime": "coreml",
+      "variant": "cache-opt",
+      "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-opt",
+      "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-opt/hy_mt_w8_from_torch.mlmodelc",
+      "inference": {
+        "variant": "cache-opt",
+        "compute_unit": "cpuAndNeuralEngine",
+        "compiled_materialized": false,
+        "stateful_runtime": true,
+        "state_error": null,
+        "load_seconds": 0.15,
+        "prefill_seconds": 6.872,
+        "first_token_latency_seconds": 0.059,
+        "generate_seconds": 1.408,
+        "translation_total_seconds": 8.479,
+        "end_to_end_seconds": 8.659,
+        "prompt_tokens": 37,
+        "output_tokens": 21,
+        "memory_rss_before_load_mb": 414.453,
+        "memory_rss_after_load_mb": 437.562,
+        "memory_rss_after_generate_mb": 3625.984,
+        "memory_rss_delta_load_mb": 23.109,
+        "memory_rss_before_load_bytes": 434585600,
+        "memory_rss_after_load_bytes": 458817536,
+        "memory_rss_after_generate_bytes": 3802120192,
+        "memory_rss_delta_load_bytes": 24231936
+      },
+      "effective_context_length": 128
+    },
+    {
+      "status": "passed",
+      "runtime": "coreml",
+      "variant": "nocache",
+      "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-nocache",
+      "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-nocache/hy_mt_w8_from_torch.mlmodelc",
+      "inference": {
+        "variant": "nocache",
+        "compute_unit": "cpuAndNeuralEngine",
+        "compiled_materialized": false,
+        "stateful_runtime": true,
+        "state_error": null,
+        "load_seconds": 0.137,
+        "prefill_seconds": 6.569,
+        "first_token_latency_seconds": 0.06,
+        "generate_seconds": 3.586,
+        "translation_total_seconds": 10.338,
+        "end_to_end_seconds": 10.518,
+        "prompt_tokens": 37,
+        "output_tokens": 64,
+        "memory_rss_before_load_mb": 416.625,
+        "memory_rss_after_load_mb": 440.375,
+        "memory_rss_after_generate_mb": 3623.031,
+        "memory_rss_delta_load_mb": 23.75,
+        "memory_rss_before_load_bytes": 436862976,
+        "memory_rss_after_load_bytes": 461766656,
+        "memory_rss_after_generate_bytes": 3799023616,
+        "memory_rss_delta_load_bytes": 24903680
+      },
+      "effective_context_length": 256
+    },
+    {
+      "status": "passed",
+      "runtime": "mlx",
+      "variant": "hy-mt1.5-1.8b-mlx",
+      "mlx_model_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/mlx-int8/hy-mt1.5-1.8b-mlx",
+      "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/mlx-int8/hy-mt1.5-1.8b-mlx",
+      "inference": {
+        "status": "passed",
+        "load_seconds": 1.071,
+        "generate_seconds": 0.943,
+        "translation_total_seconds": 2.046,
+        "prompt_tokens": 33,
+        "output_tokens": 19,
+        "memory_rss_before_load_bytes": 307806208,
+        "memory_rss_after_load_bytes": 453574656,
+        "memory_rss_after_generate_bytes": 473612288,
+        "memory_rss_delta_load_bytes": 145768448,
+        "memory_rss_before_load_mb": 293.547,
+        "memory_rss_after_load_mb": 432.562,
+        "memory_rss_after_generate_mb": 451.672,
+        "memory_rss_delta_load_mb": 139.016
+      }
+    }
+  ],
+  "summary": {
+    "status": "completed",
+    "generated_at": "2026-04-20T13:01:19.906782+00:00",
+    "coreml_compute_unit": "cpuAndNeuralEngine",
+    "include_mlx": true,
+    "coreml_root_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8",
+    "mlx_model_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/mlx-int8/hy-mt1.5-1.8b-mlx",
+    "artifact_stem": "hy-mt1.5-1.8b-coreml-int8",
+    "coreml_variants": [
+      "cache",
+      "cache-c128",
+      "cache-c256",
+      "cache-c64",
+      "cache-c96",
+      "cache-opt",
+      "nocache"
+    ],
+    "total_models": 8,
+    "success_count": 8,
+    "failure_count": 0,
+    "fastest_load": {
+      "runtime": "coreml",
+      "variant": "nocache",
+      "label": "coreml:nocache",
+      "value": 0.137
+    },
+    "fastest_translation": {
+      "runtime": "mlx",
+      "variant": "hy-mt1.5-1.8b-mlx",
+      "label": "mlx:hy-mt1.5-1.8b-mlx",
+      "value": 2.046
+    },
+    "lowest_load_memory": {
+      "runtime": "coreml",
+      "variant": "cache-c128",
+      "label": "coreml:cache-c128",
+      "value": 410.984
+    },
+    "model_rows": [
+      {
+        "runtime": "coreml",
+        "variant": "cache",
+        "label": "coreml:cache",
+        "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache",
+        "mlx_model_dir": null,
+        "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache/hy_mt_w8_from_torch.mlmodelc",
+        "stateful_runtime": true,
+        "load_seconds": 0.15,
+        "translation_total_seconds": 8.522,
+        "generate_seconds": 1.413,
+        "memory_rss_before_load_mb": 414.344,
+        "memory_rss_after_load_mb": 437.094,
+        "memory_rss_delta_load_mb": 22.75,
+        "memory_rss_after_generate_mb": 3661.125,
+        "prompt_tokens": 37,
+        "output_tokens": 21
+      },
+      {
+        "runtime": "coreml",
+        "variant": "cache-c128",
+        "label": "coreml:cache-c128",
+        "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c128",
+        "mlx_model_dir": null,
+        "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c128/hy_mt_w8_from_torch.mlmodelc",
+        "stateful_runtime": true,
+        "load_seconds": 0.151,
+        "translation_total_seconds": 8.937,
+        "generate_seconds": 1.323,
+        "memory_rss_before_load_mb": 388.219,
+        "memory_rss_after_load_mb": 410.984,
+        "memory_rss_delta_load_mb": 22.766,
+        "memory_rss_after_generate_mb": 3638.078,
+        "prompt_tokens": 37,
+        "output_tokens": 21
+      },
+      {
+        "runtime": "coreml",
+        "variant": "cache-c256",
+        "label": "coreml:cache-c256",
+        "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c256",
+        "mlx_model_dir": null,
+        "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c256/hy_mt_w8_from_torch.mlmodelc",
+        "stateful_runtime": true,
+        "load_seconds": 0.157,
+        "translation_total_seconds": 8.812,
+        "generate_seconds": 1.377,
+        "memory_rss_before_load_mb": 418.578,
+        "memory_rss_after_load_mb": 441.594,
+        "memory_rss_delta_load_mb": 23.016,
+        "memory_rss_after_generate_mb": 3576.406,
+        "prompt_tokens": 37,
+        "output_tokens": 21
+      },
+      {
+        "runtime": "coreml",
+        "variant": "cache-c64",
+        "label": "coreml:cache-c64",
+        "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c64",
+        "mlx_model_dir": null,
+        "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c64/hy_mt_w8_from_torch.mlmodelc",
+        "stateful_runtime": true,
+        "load_seconds": 0.152,
+        "translation_total_seconds": 8.461,
+        "generate_seconds": 1.318,
+        "memory_rss_before_load_mb": 416.469,
+        "memory_rss_after_load_mb": 440.438,
+        "memory_rss_delta_load_mb": 23.969,
+        "memory_rss_after_generate_mb": 3616.938,
+        "prompt_tokens": 37,
+        "output_tokens": 21
+      },
+      {
+        "runtime": "coreml",
+        "variant": "cache-c96",
+        "label": "coreml:cache-c96",
+        "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c96",
+        "mlx_model_dir": null,
+        "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c96/hy_mt_w8_from_torch.mlmodelc",
+        "stateful_runtime": true,
+        "load_seconds": 0.151,
+        "translation_total_seconds": 8.593,
+        "generate_seconds": 1.263,
+        "memory_rss_before_load_mb": 412.812,
+        "memory_rss_after_load_mb": 434.281,
+        "memory_rss_delta_load_mb": 21.469,
+        "memory_rss_after_generate_mb": 3612.75,
+        "prompt_tokens": 37,
+        "output_tokens": 21
+      },
+      {
+        "runtime": "coreml",
+        "variant": "cache-opt",
+        "label": "coreml:cache-opt",
+        "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-opt",
+        "mlx_model_dir": null,
+        "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-opt/hy_mt_w8_from_torch.mlmodelc",
+        "stateful_runtime": true,
+        "load_seconds": 0.15,
+        "translation_total_seconds": 8.479,
+        "generate_seconds": 1.408,
+        "memory_rss_before_load_mb": 414.453,
+        "memory_rss_after_load_mb": 437.562,
+        "memory_rss_delta_load_mb": 23.109,
+        "memory_rss_after_generate_mb": 3625.984,
+        "prompt_tokens": 37,
+        "output_tokens": 21
+      },
+      {
+        "runtime": "coreml",
+        "variant": "nocache",
+        "label": "coreml:nocache",
+        "coreml_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-nocache",
+        "mlx_model_dir": null,
+        "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-nocache/hy_mt_w8_from_torch.mlmodelc",
+        "stateful_runtime": true,
+        "load_seconds": 0.137,
+        "translation_total_seconds": 10.338,
+        "generate_seconds": 3.586,
+        "memory_rss_before_load_mb": 416.625,
+        "memory_rss_after_load_mb": 440.375,
+        "memory_rss_delta_load_mb": 23.75,
+        "memory_rss_after_generate_mb": 3623.031,
+        "prompt_tokens": 37,
+        "output_tokens": 64
+      },
+      {
+        "runtime": "mlx",
+        "variant": "hy-mt1.5-1.8b-mlx",
+        "label": "mlx:hy-mt1.5-1.8b-mlx",
+        "coreml_dir": null,
+        "mlx_model_dir": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/mlx-int8/hy-mt1.5-1.8b-mlx",
+        "model_path": "/Users/doracmon/Code/Aura/link-model/models/translation/converted/mlx-int8/hy-mt1.5-1.8b-mlx",
+        "stateful_runtime": null,
+        "load_seconds": 1.071,
+        "translation_total_seconds": 2.046,
+        "generate_seconds": 0.943,
+        "memory_rss_before_load_mb": 293.547,
+        "memory_rss_after_load_mb": 432.562,
+        "memory_rss_delta_load_mb": 139.016,
+        "memory_rss_after_generate_mb": 451.672,
+        "prompt_tokens": 33,
+        "output_tokens": 19
+      }
+    ],
+    "failures": [],
+    "rankings": {
+      "by_translation_total_seconds": [
+        {
+          "rank": 1,
+          "runtime": "mlx",
+          "variant": "hy-mt1.5-1.8b-mlx",
+          "label": "mlx:hy-mt1.5-1.8b-mlx",
+          "translation_total_seconds": 2.046
+        },
+        {
+          "rank": 2,
+          "runtime": "coreml",
+          "variant": "cache-c64",
+          "label": "coreml:cache-c64",
+          "translation_total_seconds": 8.461
+        },
+        {
+          "rank": 3,
+          "runtime": "coreml",
+          "variant": "cache-opt",
+          "label": "coreml:cache-opt",
+          "translation_total_seconds": 8.479
+        },
+        {
+          "rank": 4,
+          "runtime": "coreml",
+          "variant": "cache",
+          "label": "coreml:cache",
+          "translation_total_seconds": 8.522
+        },
+        {
+          "rank": 5,
+          "runtime": "coreml",
+          "variant": "cache-c96",
+          "label": "coreml:cache-c96",
+          "translation_total_seconds": 8.593
+        },
+        {
+          "rank": 6,
+          "runtime": "coreml",
+          "variant": "cache-c256",
+          "label": "coreml:cache-c256",
+          "translation_total_seconds": 8.812
+        },
+        {
+          "rank": 7,
+          "runtime": "coreml",
+          "variant": "cache-c128",
+          "label": "coreml:cache-c128",
+          "translation_total_seconds": 8.937
+        },
+        {
+          "rank": 8,
+          "runtime": "coreml",
+          "variant": "nocache",
+          "label": "coreml:nocache",
+          "translation_total_seconds": 10.338
+        }
+      ],
+      "by_load_seconds": [
+        {
+          "rank": 1,
+          "runtime": "coreml",
+          "variant": "nocache",
+          "label": "coreml:nocache",
+          "load_seconds": 0.137
+        },
+        {
+          "rank": 2,
+          "runtime": "coreml",
+          "variant": "cache",
+          "label": "coreml:cache",
+          "load_seconds": 0.15
+        },
+        {
+          "rank": 3,
+          "runtime": "coreml",
+          "variant": "cache-opt",
+          "label": "coreml:cache-opt",
+          "load_seconds": 0.15
+        },
+        {
+          "rank": 4,
+          "runtime": "coreml",
+          "variant": "cache-c128",
+          "label": "coreml:cache-c128",
+          "load_seconds": 0.151
+        },
+        {
+          "rank": 5,
+          "runtime": "coreml",
+          "variant": "cache-c96",
+          "label": "coreml:cache-c96",
+          "load_seconds": 0.151
+        },
+        {
+          "rank": 6,
+          "runtime": "coreml",
+          "variant": "cache-c64",
+          "label": "coreml:cache-c64",
+          "load_seconds": 0.152
+        },
+        {
+          "rank": 7,
+          "runtime": "coreml",
+          "variant": "cache-c256",
+          "label": "coreml:cache-c256",
+          "load_seconds": 0.157
+        },
+        {
+          "rank": 8,
+          "runtime": "mlx",
+          "variant": "hy-mt1.5-1.8b-mlx",
+          "label": "mlx:hy-mt1.5-1.8b-mlx",
+          "load_seconds": 1.071
+        }
+      ],
+      "by_memory_rss_after_load_mb": [
+        {
+          "rank": 1,
+          "runtime": "coreml",
+          "variant": "cache-c128",
+          "label": "coreml:cache-c128",
+          "memory_rss_after_load_mb": 410.984
+        },
+        {
+          "rank": 2,
+          "runtime": "mlx",
+          "variant": "hy-mt1.5-1.8b-mlx",
+          "label": "mlx:hy-mt1.5-1.8b-mlx",
+          "memory_rss_after_load_mb": 432.562
+        },
+        {
+          "rank": 3,
+          "runtime": "coreml",
+          "variant": "cache-c96",
+          "label": "coreml:cache-c96",
+          "memory_rss_after_load_mb": 434.281
+        },
+        {
+          "rank": 4,
+          "runtime": "coreml",
+          "variant": "cache",
+          "label": "coreml:cache",
+          "memory_rss_after_load_mb": 437.094
+        },
+        {
+          "rank": 5,
+          "runtime": "coreml",
+          "variant": "cache-opt",
+          "label": "coreml:cache-opt",
+          "memory_rss_after_load_mb": 437.562
+        },
+        {
+          "rank": 6,
+          "runtime": "coreml",
+          "variant": "nocache",
+          "label": "coreml:nocache",
+          "memory_rss_after_load_mb": 440.375
+        },
+        {
+          "rank": 7,
+          "runtime": "coreml",
+          "variant": "cache-c64",
+          "label": "coreml:cache-c64",
+          "memory_rss_after_load_mb": 440.438
+        },
+        {
+          "rank": 8,
+          "runtime": "coreml",
+          "variant": "cache-c256",
+          "label": "coreml:cache-c256",
+          "memory_rss_after_load_mb": 441.594
+        }
+      ]
+    }
+  }
+}

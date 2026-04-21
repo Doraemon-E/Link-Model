@@ -23,33 +23,36 @@ class SliceUpdateKeyValueCache:
         layer_idx: int,
         cache_kwargs: dict[str, Any] | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        cache_position = None
-        if cache_kwargs is not None:
-            cache_position = cache_kwargs.get("cache_position")
-        if cache_position is None:
-            cache_position = torch.arange(
-                key_states.shape[-2], device=key_states.device
-            )
+        del cache_kwargs
 
         layer_key_cache = self.key_caches[layer_idx]
         layer_value_cache = self.value_caches[layer_idx]
-        one_hot = torch.nn.functional.one_hot(
-            cache_position.to(torch.int64),
-            num_classes=self.max_cache_len,
-        ).to(layer_key_cache.dtype)
-        selection = one_hot.sum(dim=0).clamp(0, 1).view(1, 1, self.max_cache_len, 1)
+        key_updates = key_states.to(layer_key_cache.dtype)
+        value_updates = value_states.to(layer_value_cache.dtype)
 
-        key_updates = torch.matmul(
-            key_states.to(layer_key_cache.dtype).permute(0, 1, 3, 2), one_hot
-        ).permute(0, 1, 3, 2)
-        value_updates = torch.matmul(
-            value_states.to(layer_value_cache.dtype).permute(0, 1, 3, 2), one_hot
-        ).permute(0, 1, 3, 2)
+        # Sliding-window cache update: shift left and append latest token(s).
+        keep_len = max(self.max_cache_len - key_updates.shape[2], 0)
+        if keep_len > 0:
+            next_key_cache = torch.cat(
+                (
+                    layer_key_cache[:, :, -keep_len:, :],
+                    key_updates[:, :, -key_updates.shape[2] :, :],
+                ),
+                dim=2,
+            )
+            next_value_cache = torch.cat(
+                (
+                    layer_value_cache[:, :, -keep_len:, :],
+                    value_updates[:, :, -value_updates.shape[2] :, :],
+                ),
+                dim=2,
+            )
+        else:
+            next_key_cache = key_updates[:, :, -self.max_cache_len :, :]
+            next_value_cache = value_updates[:, :, -self.max_cache_len :, :]
 
-        layer_key_cache.mul_(1.0 - selection)
-        layer_key_cache.add_(key_updates)
-        layer_value_cache.mul_(1.0 - selection)
-        layer_value_cache.add_(value_updates)
+        layer_key_cache.copy_(next_key_cache)
+        layer_value_cache.copy_(next_value_cache)
 
         return layer_key_cache.to(key_states.dtype), layer_value_cache.to(
             value_states.dtype

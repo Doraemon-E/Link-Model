@@ -4,10 +4,15 @@ from helper.slice_update_key_value_cache import SliceUpdateKeyValueCache
 
 
 class StatefulHunYuanForCoreML(torch.nn.Module):
-    def __init__(self, model: AutoModelForCausalLM, max_cache_len: int) -> None:
+    def __init__(
+        self, model: AutoModelForCausalLM, max_cache_len: int, decode_only: bool = True
+    ) -> None:
         super().__init__()
+        if not decode_only:
+            raise ValueError("stateful export currently supports decode_only=True only")
         self.model = model
         self.max_cache_len = max_cache_len
+        self.decode_only = decode_only
         config = model.config
         num_layers = int(config.num_hidden_layers)
         self.num_layers = num_layers
@@ -26,6 +31,7 @@ class StatefulHunYuanForCoreML(torch.nn.Module):
                 torch.zeros(layer_cache_shape, dtype=torch.float16),
             )
 
+        # Core ML state currently requires fp16.
         self.register_buffer("cache_position", torch.zeros((1,), dtype=torch.float16))
 
     def _layer_key_caches(self) -> list[torch.Tensor]:
@@ -50,21 +56,21 @@ class StatefulHunYuanForCoreML(torch.nn.Module):
     # 重写前向推理，利用kv缓存
     def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
         input_ids = input_ids.to(torch.int64)
+        if self.decode_only:
+            input_ids = input_ids[:, -1:]
 
         # 获取kv cache的位置
         start_position = self.cache_position.to(torch.int64)
 
-        # 获取 输入的 token 的长度
-        local_positions = torch.arange(
-            input_ids.shape[1], device=input_ids.device, dtype=torch.int64
-        )
-
-        cache_position = local_positions + start_position
+        cache_position = start_position
         kv_positions = torch.arange(
             self.max_cache_len, device=input_ids.device, dtype=torch.int64
         )
+        # 滑动窗口模式下，仅允许关注尾部有效窗口。
+        filled_len = torch.clamp(start_position + input_ids.shape[1], max=self.max_cache_len)
+        valid_from = self.max_cache_len - filled_len
         # mask attension, 只能看之前的数据
-        allowed = kv_positions.unsqueeze(0) <= cache_position.unsqueeze(1)
+        allowed = kv_positions.unsqueeze(0) >= valid_from.unsqueeze(1)
         zero_mask = torch.zeros(
             allowed.shape, dtype=torch.float16, device=input_ids.device
         )
@@ -91,6 +97,6 @@ class StatefulHunYuanForCoreML(torch.nn.Module):
             return_dict=True,
         )
 
-        next_position = torch.clamp(cache_position[-1:] + 1, max=self.max_cache_len)
+        next_position = cache_position[-1:] + input_ids.shape[1]
         self.cache_position.copy_(next_position.to(self.cache_position.dtype))
         return outputs.logits.to(torch.float16)

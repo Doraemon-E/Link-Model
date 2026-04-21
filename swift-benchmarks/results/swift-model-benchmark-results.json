@@ -1,0 +1,139 @@
+{
+  "config" : {
+    "artifactStem" : "hy-mt1.5-1.8b-coreml-int8",
+    "coremlComputeUnit" : "cpuAndNeuralEngine",
+    "coremlRootDir" : "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8",
+    "coremlVariants" : [
+      "cache-c64"
+    ],
+    "includeMLX" : false,
+    "maxNewTokens" : 64,
+    "mlxModelDir" : "/Users/doracmon/Code/Aura/link-model/models/translation/converted/mlx-int8/hy-mt1.5-1.8b-mlx",
+    "pythonExecutable" : "/Users/doracmon/Code/Aura/link-model/.venv/bin/python",
+    "requestedContextLength" : 64,
+    "sourceText" : "人造的事物永远无法达到自然生命的体验和对自然的感知，因此也就无法做到更深刻的抽象思维和认知。",
+    "systemPrompt" : "You are a translation engine.",
+    "targetLanguage" : "English"
+  },
+  "generatedAt" : "2026-04-21T01:03:36.409Z",
+  "rows" : [
+    {
+      "coremlDir" : "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c64",
+      "effectiveContextLength" : 64,
+      "inference" : {
+        "compiledMaterialized" : false,
+        "computeUnit" : "cpuAndNeuralEngine",
+        "endToEndSeconds" : 13.396,
+        "firstTokenLatencySeconds" : 0.057,
+        "generateSeconds" : 1.477,
+        "loadSeconds" : 0.136,
+        "memoryRSSAfterGenerateBytes" : 3622912000,
+        "memoryRSSAfterGenerateMB" : 3455.078,
+        "memoryRSSAfterLoadBytes" : 42516480,
+        "memoryRSSAfterLoadMB" : 40.547,
+        "memoryRSSBeforeLoadBytes" : 13615104,
+        "memoryRSSBeforeLoadMB" : 12.984,
+        "memoryRSSDeltaLoadBytes" : 28901376,
+        "memoryRSSDeltaLoadMB" : 27.563,
+        "outputTokens" : 24,
+        "prefillSeconds" : 7.851,
+        "promptTokens" : 49,
+        "statefulRuntime" : true,
+        "translationTotalSeconds" : 10.201,
+        "variant" : "cache-c64"
+      },
+      "modelPath" : "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c64/hy_mt_w8_from_torch.mlmodelc",
+      "runtime" : "coreml",
+      "status" : "passed",
+      "variant" : "cache-c64"
+    }
+  ],
+  "status" : "completed",
+  "summary" : {
+    "artifactStem" : "hy-mt1.5-1.8b-coreml-int8",
+    "coremlComputeUnit" : "cpuAndNeuralEngine",
+    "coremlRootDir" : "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8",
+    "coremlVariants" : [
+      "cache-c64"
+    ],
+    "failureCount" : 0,
+    "failures" : [
+
+    ],
+    "fastestLoad" : {
+      "label" : "coreml:cache-c64",
+      "runtime" : "coreml",
+      "value" : 0.136,
+      "variant" : "cache-c64"
+    },
+    "fastestTranslation" : {
+      "label" : "coreml:cache-c64",
+      "runtime" : "coreml",
+      "value" : 10.201,
+      "variant" : "cache-c64"
+    },
+    "generatedAt" : "2026-04-21T01:03:36.409Z",
+    "includeMLX" : false,
+    "lowestLoadMemory" : {
+      "label" : "coreml:cache-c64",
+      "runtime" : "coreml",
+      "value" : 40.547,
+      "variant" : "cache-c64"
+    },
+    "mlxModelDir" : "/Users/doracmon/Code/Aura/link-model/models/translation/converted/mlx-int8/hy-mt1.5-1.8b-mlx",
+    "modelRows" : [
+      {
+        "coremlDir" : "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c64",
+        "generateSeconds" : 1.477,
+        "label" : "coreml:cache-c64",
+        "loadSeconds" : 0.136,
+        "memoryRSSAfterGenerateMB" : 3455.078,
+        "memoryRSSAfterLoadMB" : 40.547,
+        "memoryRSSBeforeLoadMB" : 12.984,
+        "memoryRSSDeltaLoadMB" : 27.563,
+        "modelPath" : "/Users/doracmon/Code/Aura/link-model/models/translation/converted/coreml-int8/hy-mt1.5-1.8b-coreml-int8-cache-c64/hy_mt_w8_from_torch.mlmodelc",
+        "outputTokens" : 24,
+        "promptTokens" : 49,
+        "runtime" : "coreml",
+        "statefulRuntime" : true,
+        "translationTotalSeconds" : 10.201,
+        "variant" : "cache-c64"
+      }
+    ],
+    "rankings" : {
+      "by_load_seconds" : [
+        {
+          "label" : "coreml:cache-c64",
+          "metric" : "loadSeconds",
+          "rank" : 1,
+          "runtime" : "coreml",
+          "value" : 0.136,
+          "variant" : "cache-c64"
+        }
+      ],
+      "by_memory_rss_after_load_mb" : [
+        {
+          "label" : "coreml:cache-c64",
+          "metric" : "memoryRSSAfterLoadMB",
+          "rank" : 1,
+          "runtime" : "coreml",
+          "value" : 40.547,
+          "variant" : "cache-c64"
+        }
+      ],
+      "by_translation_total_seconds" : [
+        {
+          "label" : "coreml:cache-c64",
+          "metric" : "translationTotalSeconds",
+          "rank" : 1,
+          "runtime" : "coreml",
+          "value" : 10.201,
+          "variant" : "cache-c64"
+        }
+      ]
+    },
+    "status" : "completed",
+    "successCount" : 1,
+    "totalModels" : 1
+  }
+}
